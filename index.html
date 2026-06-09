@@ -860,7 +860,7 @@ function initFirebase() {
   if (!FIREBASE_CONFIGURED) return;
   firebase.initializeApp(FIREBASE_CONFIG);
   _db  = firebase.database();
-  _ref = _db.ref('oskar/state');
+  _ref = _db.ref('oskar-xk7m29qr/state');
 
   // Echtzeit-Listener: sobald jemand anderes speichert → sofort rendern
   _ref.on('value', snap => {
