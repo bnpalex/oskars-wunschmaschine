@@ -1,0 +1,2731 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oskars Punkte ⭐</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@keyframes breathe-dim{
+  0%,100%{filter:brightness(1)}
+  50%    {filter:brightness(0.75)}
+}
+@keyframes breathe-color{
+  0%,100%{color:#667eea}
+  50%    {color:#3a1a6e}
+}
+@keyframes breathe-color-bg{
+  0%,100%{background-color:#667eea}
+  50%    {background-color:#3a1a6e}
+}
+@keyframes breathe{
+  0%  {background-position:0% 50%}
+  50% {background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@keyframes heart-pop{
+  0%  {transform:scale(0.3);opacity:.9}
+  60% {transform:scale(1.6);opacity:.6}
+  100%{transform:scale(2.2);opacity:0}
+}
+@keyframes heart-float{
+  0%  {transform:translateY(0) rotate(-8deg);opacity:1}
+  80% {opacity:.8}
+  100%{transform:translateY(-120vh) rotate(12deg);opacity:0}
+}
+@keyframes celebrate-in{
+  0%  {transform:scale(.6);opacity:0}
+  70% {transform:scale(1.06)}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes celebrate-bg{
+  0%  {background-position:0% 50%}
+  50% {background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@keyframes wink{
+  0%,88%,100%{transform:scaleY(1)}
+  92%,96%    {transform:scaleY(0.1)}
+}
+.pig-eye{animation:wink 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{
+  0%,85%,100%{transform:scaleY(1)}
+  90%,95%    {transform:scaleY(0.08)}
+}
+.smiley-eye{animation:blink 3.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+body{font-family:'Arial Rounded MT Bold',Arial,sans-serif;background:linear-gradient(135deg,#667eea,#4a2570,#764ba2,#3a4fa8,#667eea);background-size:400% 400%;min-height:100vh;padding:12px 12px 80px;color:#333;animation:breathe 8s ease-in-out infinite}
+
+/* ── Header ── */
+.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.app-header h1{color:white;font-size:1.6em;text-shadow:2px 2px 4px rgba(0,0,0,.3);cursor:default;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.app-header h1:hover{transform:scale(1.08)}
+.week-lbl{color:rgba(255,255,255,.8);font-size:.78em;text-align:center;margin-bottom:14px}
+.burger-btn{background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:8px 12px;font-size:1.3em;cursor:pointer;color:white}
+
+/* ── Cards ── */
+.card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.card h2{font-size:.95em;margin-bottom:12px;color:#667eea;display:flex;align-items:center;justify-content:center;gap:6px;cursor:default;transition:transform .5s cubic-bezier(.34,1.56,.64,1);text-align:center;animation:breathe-color 8s ease-in-out infinite}
+.card h2:hover{transform:scale(1.08)}
+.h2-icon{display:inline-block;filter:grayscale(1) sepia(1) hue-rotate(220deg) saturate(5) brightness(0.85);animation:breathe-dim 8s ease-in-out infinite}
+.h2-icon-lg{display:inline-block;font-size:1.5em;filter:grayscale(1) sepia(1) hue-rotate(220deg) saturate(8) brightness(0.82);animation:breathe-dim 8s ease-in-out infinite}
+.svg-icon{display:inline-block;width:1.5em;height:1.5em;vertical-align:middle;flex-shrink:0;color:#667eea;animation:breathe-color 8s ease-in-out infinite}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+.jbox .big{font-size:1.6em;font-weight:bold;color:#667eea;animation:breathe-color 8s ease-in-out infinite}
+.stat-cell .sv{font-size:1.5em;font-weight:bold;color:#667eea;animation:breathe-color 8s ease-in-out infinite}
+.prog-bar{height:100%;border-radius:999px;transition:width .4s;animation:breathe-color-bg 8s ease-in-out infinite}
+.score-sub{font-size:.8em;color:#667eea;margin-top:2px;animation:breathe-color 8s ease-in-out infinite}
+.prog-lbl{font-size:.9em;font-weight:bold;color:#667eea;text-align:right;animation:breathe-color 8s ease-in-out infinite}
+
+/* ── Day Grid ── */
+.day-grid{display:grid;grid-template-columns:72px repeat(5,1fr);gap:4px;align-items:center}
+.day-header{text-align:center;font-size:.72em;font-weight:bold;color:#999}
+.day-header.holiday-col{color:#e74c3c}
+.day-header.vacation-col{color:#bbb}
+.row-label{font-size:.72em;color:#666;font-weight:bold;line-height:1.3}
+.check-btn{width:34px;height:34px;border-radius:8px;border:2px solid #ddd;background:#f9f9f9;cursor:pointer;font-size:1em;display:flex;align-items:center;justify-content:center;margin:auto;transition:all .1s;user-select:none}
+.check-btn:active{transform:scale(.88)}
+.on-mathe{background:#9c27b0;border-color:#9c27b0;color:white;animation:breathe-dim 8s ease-in-out infinite}
+.on-deutsch{background:#e91e63;border-color:#e91e63;color:white;animation:breathe-dim 8s ease-in-out infinite}
+.on-bonus{background:#f8e8ff;border-color:#ce93d8}
+.day-off{background:#f5f5f5;border:2px dashed #e0e0e0;cursor:default;font-size:.65em;color:#ccc;flex-direction:column;height:auto;min-height:34px;padding:2px}
+.fill-slot{width:34px;height:34px;border-radius:8px;border:2px dashed #c8a8f0;background:#faf5ff;cursor:pointer;font-size:.85em;display:flex;align-items:center;justify-content:center;margin:auto;color:#764ba2;user-select:none}
+.fill-slot.used{background:#ffe5ff;border:2px solid #b000c0;cursor:pointer}
+
+/* ── Score ── */
+.score-big{text-align:center;padding:10px 0 6px}
+.score-num{font-size:3em;font-weight:bold;line-height:1;animation:breathe-color 8s ease-in-out infinite}
+.goal-reached{color:#9c27b0} .not-reached{color:#5c6bc0}
+.prog-wrap{background:#eef0ff;border-radius:999px;height:10px;margin:8px 0 3px;overflow:hidden}
+
+/* ── Joker boxes ── */
+.jrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.jbox{flex:1;min-width:80px;background:#eef0ff;border-radius:10px;padding:10px 6px;text-align:center}
+.jbox .lbl{font-size:.65em;color:#888;margin-top:2px}
+
+/* ── Joker visual tokens ── */
+.joker-section{margin-top:12px}
+.joker-section-title{font-size:.75em;font-weight:bold;color:#777;margin-bottom:6px}
+.joker-row{display:flex;flex-wrap:wrap;gap:5px;min-height:20px}
+.j-token{width:38px;height:38px;display:flex;align-items:center;justify-content:center;user-select:none}
+.j-bonus-token svg{stroke:#667eea;fill:#667eea}
+.j-smiley-token svg{stroke:#667eea;fill:#667eea}
+.j-spent-token svg{stroke:#ddd;fill:#ddd}
+.dots-row{display:flex;gap:5px;align-items:center;margin-top:6px}
+.dot{width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+.dot svg{stroke:#ddd;fill:none}
+.dot.on svg{stroke:#9c27b0;fill:#9c27b0}
+.dot.on-green svg{stroke:#764ba2;fill:#764ba2}
+.dot-lbl{font-size:.7em;color:#aaa;margin-left:2px}
+
+/* ── Goals / Joker-Maschine ── */
+.goal-item{display:flex;align-items:center;gap:8px;padding:10px 6px;border-bottom:1px solid #f5f5f5}
+.goal-item.fulfilled-item{opacity:.6}
+.g-emoji{font-size:2.8em;flex-shrink:0}
+.g-info{flex:1;min-width:0}
+.g-name{font-size:.88em;font-weight:bold}
+.g-name.done{text-decoration:line-through;color:#aaa}
+.g-sub{font-size:.7em;color:#aaa;margin-top:1px}
+.g-prog{background:#eef0ff;border-radius:999px;height:6px;margin-top:4px;overflow:hidden}
+.g-prog-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .4s}
+.g-prog-bar.can{background:linear-gradient(90deg,#764ba2,#667eea)}
+.redeem-btn{background:linear-gradient(135deg,#f093fb,#f5576c);color:white;border:none;border-radius:20px;padding:6px 12px;font-size:.75em;cursor:pointer;font-weight:bold;white-space:nowrap;flex-shrink:0}
+.redeem-btn:disabled{background:#ddd;cursor:default}
+.done-badge{font-size:.7em;color:#9c27b0;white-space:nowrap;flex-shrink:0}
+.g-rm{font-size:.72em;color:#ddd;cursor:pointer;flex-shrink:0}
+.add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.add-row input,.add-row select{border:2px solid #ddd;border-radius:8px;padding:6px 10px;font-size:.82em;outline:none}
+.add-row input:focus,.add-row select:focus{border-color:#5c6bc0}
+.add-row button{background:#5c6bc0;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:.82em;cursor:pointer;font-weight:bold;animation:breathe-dim 8s ease-in-out infinite}
+
+/* ── Smileys ── */
+.smiley-day-row{display:flex;align-items:flex-start;gap:6px;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.sd-lbl{width:24px;font-size:.75em;font-weight:bold;color:#999;padding-top:4px;flex-shrink:0}
+.sd-tags{display:flex;flex-wrap:wrap;gap:3px;flex:1;min-height:26px;align-items:center}
+.s-tag{background:#f8e8ff;border:1.5px solid #ce93d8;border-radius:20px;padding:2px 7px;font-size:.68em;display:flex;align-items:center;gap:2px}
+.s-tag .rm{cursor:pointer;color:#aaa}
+.s-add{background:#5c6bc0;color:white;border:none;border-radius:20px;padding:3px 9px;font-size:.68em;cursor:pointer;white-space:nowrap;flex-shrink:0;animation:breathe-dim 8s ease-in-out infinite}
+.s-sel{border:1.5px solid #ddd;border-radius:8px;padding:3px 5px;font-size:.72em;outline:none;flex-shrink:0;max-width:120px}
+.tag-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tag{background:#eee;border-radius:20px;padding:2px 9px;font-size:.72em;display:flex;align-items:center;gap:3px}
+.tag .rm{cursor:pointer;color:#aaa}
+
+/* ── Burger menu overlay ── */
+#menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:flex-start;justify-content:flex-end}
+#menu-overlay.open{display:flex}
+#menu-panel{background:white;width:min(320px,90vw);height:100vh;padding:20px;overflow-y:auto;animation:slideIn .2s}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.menu-close{background:none;border:none;font-size:1.4em;cursor:pointer;float:right;color:#888}
+.menu-section{margin-top:6px;border-radius:12px;overflow:hidden;border:1px solid #f0f0f0}
+.menu-section h3{font-size:.88em;color:#444;margin:0;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:8px;background:#fafafa}
+.menu-section h3:hover{background:#f3f3f3}
+.menu-section h3 .acc-arrow{font-size:.7em;color:#bbb;transition:transform .2s;margin-left:auto;flex-shrink:0}
+.menu-section.open h3 .acc-arrow{transform:rotate(180deg)}
+.menu-section .acc-body{display:none;padding:12px 14px 14px;border-top:1px solid #f0f0f0}
+.menu-section.open .acc-body{display:block}
+.conv-box{background:#f7f0ff;border-radius:10px;padding:12px}
+.conv-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#555;font-size:.82em;margin-bottom:8px}
+.conv-row:last-child{margin-bottom:0}
+.conv-row input{width:58px;border:2px solid #c8a8f0;border-radius:8px;padding:4px 6px;font-size:.9em;text-align:center;outline:none}
+.conv-result{font-weight:bold;color:#5c6bc0;font-size:1.1em}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-cell{background:#eef0ff;border-radius:10px;padding:10px;text-align:center}
+.stat-cell .sl{font-size:.68em;color:#888;margin-top:2px}
+
+/* ── Diploma ── */
+.diploma-box{background:white;border:2px solid #c5caf5;border-radius:14px;padding:16px;margin-top:10px;color:#333}
+.diploma-title{text-align:center;font-size:1.1em;font-weight:bold;margin-bottom:12px;color:#5c6bc0}
+.perf-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.82em}
+.perf-bar-label{width:100px;flex-shrink:0;color:#555;font-size:.75em}
+.perf-bar-wrap{flex:1;background:#eef0ff;border-radius:999px;height:14px;overflow:hidden;position:relative}
+.perf-bar-fill{height:100%;border-radius:999px;transition:width .5s}
+.perf-bar-pct{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.65em;color:white;font-weight:bold}
+.stars-row{text-align:center;font-size:1.8em;margin:10px 0 4px;color:#5c6bc0}
+.fulfilled-list{margin-top:10px}
+.fulfilled-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #eef0ff;font-size:.8em}
+.fulfilled-date{color:#aaa;font-size:.85em}
+.school-info{background:#eef0ff;border-radius:10px;padding:10px;margin-top:10px;font-size:.78em;color:#555;line-height:1.6}
+
+/* ── New week / school year ── */
+/* ── Abenteuer-Zeit ── */
+.ab-cat-btn{display:inline-flex;align-items:center;gap:5px;background:#fff9e6;border:2px solid #f6d080;border-radius:20px;padding:7px 13px;font-size:.85em;cursor:pointer;transition:background .15s,border-color .15s;font-weight:500}
+.ab-cat-btn:active,.ab-cat-btn.tapped{background:#f6a821;border-color:#e07b00;color:white}
+.ab-log-entry{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #fff3cc;font-size:.88em}
+.ab-log-entry .ab-rm{margin-left:auto;color:#ddd;cursor:pointer;font-size:.9em;padding:0 4px;flex-shrink:0}
+.ab-log-entry .ab-rm:hover{color:#e53935}
+.ab-ziel-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #fff3cc}
+.ab-ziel-row .ab-ziel-check{width:22px;height:22px;border-radius:50%;border:2px solid #f6a821;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9em;transition:background .15s;color:white}
+.ab-ziel-row .ab-ziel-check.done{background:#c86a00;border-color:#c86a00;color:white}
+.ab-ziel-row .ab-ziel-text{flex:1;font-size:.9em;color:#555}
+.ab-ziel-row .ab-ziel-text.done{text-decoration:line-through;color:#bbb}
+.ab-ziel-row .ab-ziel-rm{color:#ddd;cursor:pointer;font-size:.85em;padding:0 4px}
+.ab-day-group{margin-bottom:10px}
+.ab-day-date{font-size:.78em;font-weight:bold;color:#c86a00;margin-bottom:2px}
+
+/* ── Print ── */
+@keyframes ab-blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+@media print {
+  body * { visibility: hidden !important; }
+  #ab-print-area, #ab-print-area * { visibility: visible !important; }
+  #ab-print-area { position: fixed; top: 0; left: 0; width: 100%; padding: 32px; font-family: Arial, sans-serif; }
+}
+
+/* Vacation gradient override (set via JS) */
+body.abenteuer-mode-active .app-header{background:transparent !important;box-shadow:none !important}
+body.abenteuer-mode-active #app-title{color:#c86a00 !important;text-shadow:none !important}
+body.abenteuer-mode-active .burger-btn{background:rgba(200,106,0,.12) !important;color:#c86a00 !important}
+body.abenteuer-mode-active #ab-header-badge{background:rgba(200,106,0,.12);color:#c86a00}
+body.abenteuer-mode-active .card h2{color:#c86a00 !important;animation:none !important}
+body.abenteuer-mode-active .card h2 svg{stroke:#c86a00 !important}
+body.abenteuer-mode-active .ab-day-date{color:#c86a00 !important}
+body.abenteuer-mode-active #smilies-bg{filter:hue-rotate(125deg) saturate(1.3) brightness(1.1)}
+body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 40%,#ffccbc 100%) !important}
+
+.btn-week{display:block;width:100%;background:linear-gradient(135deg,#f093fb,#f5576c);color:white;border:none;border-radius:12px;padding:12px;font-size:.92em;font-weight:bold;cursor:pointer;margin-bottom:8px;box-shadow:0 4px 12px rgba(240,93,251,.3)}
+.btn-year{display:block;width:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;padding:12px;font-size:.92em;font-weight:bold;cursor:pointer;animation:breathe-dim 8s ease-in-out infinite}
+.small-btn{font-size:.75em;color:#5c6bc0;background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:8px;display:block}
+.history-panel{display:none;margin-top:8px}
+.history-entry{font-size:.75em;color:#888;padding:4px 0;border-bottom:1px solid #f5f5f5}
+.section-div{height:1px;background:#f0f0f0;margin:10px 0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:white;padding:10px 20px;border-radius:999px;font-size:.88em;z-index:9999;transition:transform .3s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.settings-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:.82em;color:#555}
+.settings-row label{flex:1}
+.settings-row input{width:54px;border:2px solid #ddd;border-radius:8px;padding:4px 6px;font-size:.9em;text-align:center;outline:none}
+
+/* ── Help overlay styles ── */
+.help-section{margin-bottom:18px}
+.help-h2{font-size:.92em;font-weight:bold;color:#5c6bc0;border-bottom:2px solid #e8eaf6;padding-bottom:4px;margin-bottom:8px}
+.hi{width:1em;height:1em;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.help-table{border-radius:8px;overflow:hidden;border:1px solid #eee;margin-bottom:6px}
+.help-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border-bottom:1px solid #f0f0f0;font-size:.82em}
+.help-row:last-child{border-bottom:none}
+.help-row span:first-child{flex:1}
+.help-row span:last-child{color:#5c6bc0;font-weight:bold;white-space:nowrap}
+.help-head{background:#5c6bc0;color:white;font-weight:bold}
+.help-head span{color:white!important}
+.help-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;font-size:.85em}
+.help-num{min-width:24px;height:24px;background:#5c6bc0;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78em;font-weight:bold;flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+
+<!-- ── Burger Menu ── -->
+<div id="menu-overlay" onclick="if(event.target===this)closeMenu()">
+<div id="menu-panel">
+  <button class="menu-close" onclick="closeMenu()">✕</button>
+  <h2 style="font-size:1.1em;color:#5c6bc0;"><svg style="width:1em;height:1em;vertical-align:middle;stroke:#5c6bc0;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menü</h2>
+
+  <div class="menu-section open">
+    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> Statistik<span class="acc-arrow">▼</span></h3>
+    <div class="acc-body">
+      <div class="stat-grid" id="stat-grid"></div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5a4 4 0 1 0 0 7"/><line x1="8" y1="11" x2="15" y2="11"/><line x1="8" y1="14" x2="14" y2="14"/></svg> Umrechner<span class="acc-arrow">▼</span></h3>
+    <div class="acc-body">
+      <div class="conv-box">
+        <div class="conv-row">
+          <span>Kurs:</span>
+          <input type="number" id="conv-euros" min="0.5" step="0.5" value="10" onchange="saveConvRate()"/>
+          <span>€ =</span>
+          <input type="number" id="conv-jokers-rate" min="1" step="1" value="5" onchange="saveConvRate()"/>
+          <span><svg class="hi" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Joker</span>
+        </div>
+        <div class="conv-row">
+          <span>Preis:</span>
+          <input type="number" id="conv-price" min="0" step="0.5" placeholder="€" oninput="calcConv()"/>
+          <span>€ =</span>
+          <span class="conv-result" id="conv-result">–</span>
+          <span><svg class="hi" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Joker</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Einstellungen<span class="acc-arrow">▼</span></h3>
+    <div class="acc-body">
+      <div class="settings-row">
+        <label>Schulferien: Bundesland</label>
+        <span style="color:#5c6bc0;font-size:.9em;font-weight:bold;">NRW</span>
+      </div>
+      <div class="settings-row">
+        <label>Bonuspunkte pro Joker</label>
+        <input type="number" id="set-b-per-j" min="1" max="10" value="3" onchange="saveSettings()"/>
+      </div>
+      <div class="settings-row">
+        <label>Smileys pro Joker</label>
+        <input type="number" id="set-s-per-j" min="1" max="10" value="5" onchange="saveSettings()"/>
+      </div>
+      <div class="settings-row">
+        <label>PIN für vergangene Tage</label>
+        <input type="password" id="set-edit-pin" maxlength="8" placeholder="PIN" style="width:70px" onchange="saveSettings()"/>
+      </div>
+      <p style="font-size:.7em;color:#aaa;margin-top:8px;">Joker verfallen nicht. Max. 1 Joker pro Woche einsetzbar.</p>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Sicherheit<span class="acc-arrow">▼</span></h3>
+    <div class="acc-body">
+      <div id="unlock-section">
+        <div id="unlock-status" style="font-size:.82em;color:#e53935;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <svg style="width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Sicherheit gesperrt
+        </div>
+        <div id="unlock-form" style="display:flex;gap:8px;align-items:center">
+          <input type="password" id="unlock-pin-input" maxlength="8" placeholder="PIN eingeben" style="flex:1;border:2px solid #ddd;border-radius:8px;padding:7px 10px;font-size:.9em;outline:none" onkeydown="if(event.key==='Enter')unlockEdit()"/>
+          <button onclick="unlockEdit()" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:.85em;font-weight:bold;cursor:pointer;white-space:nowrap">Entsperren</button>
+        </div>
+        <div id="lock-btn-wrap" style="display:none">
+          <button onclick="lockEdit()" style="width:100%;background:#e53935;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:.85em;font-weight:bold;cursor:pointer">🔒 Wieder sperren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schulferien<span class="acc-arrow">▼</span></h3>
+    <div class="acc-body">
+      <div id="school-weeks-info" style="font-size:.78em;color:#666;line-height:1.7"></div>
+      <div id="vacation-list" style="margin-top:10px"></div>
+      </div>
+  </div>
+
+  <div class="menu-section">
+    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Anleitung<span class="acc-arrow">▼</span></h3>
+    <div class="acc-body">
+      <button onclick="closeMenu();openHelp()" style="width:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;padding:10px;font-size:.85em;font-weight:bold;cursor:pointer;">
+        Anleitung anzeigen
+      </button>
+    </div>
+  </div>
+
+  <!-- Maschine wechseln – frei unter dem Akkordion -->
+  <button id="ab-menu-btn" onclick="toggleAbenteuerManual()" style="width:100%;margin-top:12px;border:none;border-radius:10px;padding:11px;font-size:.85em;font-weight:bold;cursor:pointer"></button>
+  <div id="ab-menu-status" style="font-size:.78em;color:#888;margin-top:6px;text-align:center"></div>
+  <button id="school-preview-btn" onclick="toggleSchoolPreview()" style="width:100%;margin-top:8px;border:none;border-radius:10px;padding:11px;font-size:.85em;font-weight:bold;cursor:pointer;background:#f0f0f0;color:#555;display:none"></button>
+</div>
+</div>
+
+<!-- ── Anleitung Overlay ── -->
+<div id="help-overlay" style="display:none;position:fixed;inset:0;background:white;z-index:2000;overflow-y:auto;padding:20px 20px 60px">
+  <div style="max-width:560px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:white;padding:10px 0;border-bottom:2px solid #eee">
+      <h2 style="color:#5c6bc0;font-size:1em"><svg class="hi" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Anleitung – Oskars Punkte</h2>
+      <button onclick="closeHelp()" style="background:#f0f0f0;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.85em">✕ Schließen</button>
+    </div>
+
+    <div style="font-family:Arial,sans-serif;font-size:.85em;line-height:1.7;color:#333">
+
+      <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;padding:14px 16px;text-align:center;margin-bottom:14px">
+        <div style="font-size:1.3em;font-weight:bold">Oskars Punkte-Maschine</div>
+        <div style="opacity:.85;margin-top:3px;font-size:.88em">Gebrauchsanweisung für Eltern und Betreuer</div>
+      </div>
+
+      <!-- 1 Was hab ich heute geschafft -->
+      <div class="menu-section open">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Was hab ich heute geschafft?<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <div class="help-table">
+            <div class="help-row help-head"><span>Was</span><span>Punkte</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><path d="M4 20V4h16"/><line x1="4" y1="20" x2="20" y2="4"/></svg> Mathe erledigt</span><span>1 Punkt</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Deutsch erledigt</span><span>1 Punkt</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Extra-Einsatz (nur wenn Mathe+Deutsch ✔)</span><span>1 Bonuspunkt</span></div>
+          </div>
+          <p style="margin-top:8px">Feiertage und NRW-Schulferien werden automatisch als frei markiert.</p>
+        </div>
+      </div>
+
+      <!-- 2 Oskars Superkräfte -->
+      <div class="menu-section">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/></svg> Oskars Superkräfte<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <p>Zeigt Oskar besondere soziale Stärken, bekommt er einen Smiley. <strong>5 Smileys = 1 Joker.</strong> Eigene Kategorien können im Menü hinzugefügt werden.</p>
+        </div>
+      </div>
+
+      <!-- 3 Meine Punkte -->
+      <div class="menu-section">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Meine Punkte &amp; Joker<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <p>Normalerweise <strong>10 Punkte</strong> pro Woche (5× Mathe + 5× Deutsch). Der Fortschrittsbalken zeigt den Stand. Bei Zielerreichung erscheint 🎉 und Oskar bekommt direkt 1 Joker.</p>
+          <div class="help-table" style="margin-top:10px">
+            <div class="help-row help-head"><span>Joker-Quelle</span><span>Regel</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Wochenziel erreicht</span><span>direkt 1 Joker</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Extra-Einsatz</span><span>3 Bonuspunkte = 1 Joker</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/></svg> Superkräfte</span><span>5 Smileys = 1 Joker</span></div>
+            <div class="help-row"><span><svg class="hi" viewBox="0 0 24 24"><circle cx="12" cy="14" r="9.5"/><path d="M5 7 Q3.5 2 7 3.5 Q9.5 5 8 8"/><path d="M19 7 Q20.5 2 17 3.5 Q14.5 5 16 8"/><ellipse cx="12" cy="17.5" rx="4" ry="2.8"/></svg> Sparschwein</span><span>10 Punkte = 1 Joker</span></div>
+          </div>
+          <p style="margin-top:8px"><strong>Joker einsetzen:</strong> Max. 1 pro Woche — füllt eine fehlende Leistung. Herz antippen → einsetzen, nochmal → zurückgeben. Joker verfallen nicht.</p>
+        </div>
+      </div>
+
+      <!-- 4 Oskars Wünsche -->
+      <div class="menu-section">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> Oskars Wünsche<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <p>Oskar kann Joker für Wünsche sparen. Jeder Wunsch hat einen Joker-Preis. Sobald genug gesammelt sind, leuchtet der Einlösen-Button auf. Eingelöste Wünsche erscheinen im Diplom mit Datum.</p>
+          <p style="background:#eef0ff;border-radius:8px;padding:8px;margin-top:6px">
+            Beispiele: Comic Heft = 3 Joker &nbsp;·&nbsp; Schwimmbad = 4 Joker &nbsp;·&nbsp; Lego-Set = 10 Joker
+          </p>
+        </div>
+      </div>
+
+      <!-- 5 Oskars Sparschwein -->
+      <div class="menu-section">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><circle cx="12" cy="14" r="9.5"/><path d="M5 7 Q3.5 2 7 3.5 Q9.5 5 8 8"/><path d="M19 7 Q20.5 2 17 3.5 Q14.5 5 16 8"/><ellipse cx="12" cy="17.5" rx="4" ry="2.8"/><circle cx="10.2" cy="17.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="13.8" cy="17.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="8.5" cy="12.5" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="12.5" r="1" fill="currentColor" stroke="none"/></svg> Oskars Sparschwein<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <p>Hat Oskar das Wochenziel <em>nicht</em> erreicht, kommen seine Punkte ins Sparschwein — statt verloren zu gehen. Bei <strong>10 angespartén Punkten</strong> gibt es 1 Joker.</p>
+          <p style="background:#eef0ff;border-radius:8px;padding:8px;margin-top:6px"><strong>Wichtig:</strong> Ins Sparschwein kommen <em>nur</em> Punkte aus verfehlten Wochen. Wer das Ziel schafft, bekommt den Joker direkt!</p>
+        </div>
+      </div>
+
+      <!-- 6 Mein Diplom -->
+      <div class="menu-section">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M12 17c-2.67 0-8-1.34-8-4V5h16v8c0 2.66-5.33 4-8 4z"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg> Mein Diplom<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <p>Zeigt Oskars Gesamtleistung: Sterne-Bewertung, Balken für Ziele / Schulleistung / Extra-Einsatz / Superkräfte, eingelöste Wünsche mit Datum und Oskars Sozial-Superpower.</p>
+        </div>
+      </div>
+
+      <!-- 7 Schnellstart -->
+      <div class="menu-section">
+        <h3 onclick="toggleAcc(this)" style="font-size:.85em"><svg class="hi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Schnellstart für den Alltag<span class="acc-arrow">▼</span></h3>
+        <div class="acc-body">
+          <div class="help-step"><div class="help-num">1</div><div>Seite öffnen: <strong>oskar-monte.netlify.app</strong></div></div>
+          <div class="help-step"><div class="help-num">2</div><div>Nach Mathe: Mathe-Kästchen antippen</div></div>
+          <div class="help-step"><div class="help-num">3</div><div>Nach Deutsch: Deutsch-Kästchen antippen</div></div>
+          <div class="help-step"><div class="help-num">4</div><div>Extra-Einsatz: Stern antippen → Bonuspunkt</div></div>
+          <div class="help-step"><div class="help-num">5</div><div>Superkräfte: Kategorie wählen → + antippen</div></div>
+          <div class="help-step"><div class="help-num">6</div><div>Freitags: <strong>„Neue Woche starten"</strong> antippen</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Info Popup Tagesleistungen ── -->
+<div id="info-popup" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:16px;padding:22px;max-width:340px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:1em;font-weight:bold;color:#5c6bc0"><svg class="hi" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Kurzanleitung für Lehrkräfte</span>
+      <button onclick="document.getElementById('info-popup').style.display='none'" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.85em">✕</button>
+    </div>
+    <div style="font-size:.83em;color:#444;line-height:1.75">
+      <p style="margin-bottom:10px">Hier wird Oskars tägliche Schulleistung eingetragen. Bitte am Ende jedes Schultages ausfüllen:</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:1.2em;flex-shrink:0"><svg class="hi" viewBox="0 0 24 24"><path d="M4 20V4h16"/><line x1="4" y1="20" x2="20" y2="4"/></svg></span>
+          <span><strong>Mathe</strong> – antippen wenn Oskar sein Mathe-Pensum für heute erledigt hat</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:1.2em;flex-shrink:0"><svg class="hi" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span><strong>Deutsch</strong> – antippen wenn Oskar sein Deutsch-Pensum erledigt hat</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:1.2em;flex-shrink:0"><svg class="hi" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+          <span><strong>Bonus</strong> – antippen wenn Oskar <em>mehr</em> als das Pflichtpensum geleistet hat (nur möglich wenn Mathe + Deutsch erledigt)</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:1.2em;flex-shrink:0"><svg class="hi" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+          <span><strong>Joker</strong> – erscheint wenn Oskar gespeicherte Joker hat. Damit kann er eine fehlende Leistung ausgleichen (max. 1× pro Woche)</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:#eef0ff;border-radius:8px;padding:10px;font-size:.9em;color:#5c6bc0">
+        <svg class="hi" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4.5-3 6H8c-1.5-1.5-3-3.5-3-6a7 7 0 0 1 7-7z"/></svg> Schulferien und Feiertage werden automatisch grau markiert – an diesen Tagen muss nichts eingetragen werden.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Setup-Hinweis (wenn Firebase nicht konfiguriert) ── -->
+<div id="setup-banner" style="display:none;background:#f8e8ff;border:2px solid #ce93d8;border-radius:12px;padding:14px;margin-bottom:12px;font-size:.82em;color:#7b1fa2;line-height:1.7">
+  <strong>⚙️ Firebase noch nicht eingerichtet – App läuft im Offline-Modus (nur dieses Gerät)</strong><br>
+  Zum Online-Schalten: Öffne die HTML-Datei im Texteditor, trage deine Firebase-Daten unter <code>FIREBASE_CONFIG</code> ein und lade die Datei auf Netlify hoch.<br>
+  <a href="https://console.firebase.google.com" target="_blank" style="color:#5c6bc0;font-weight:bold">→ Firebase Projekt erstellen</a> &nbsp;|&nbsp;
+  <a href="https://app.netlify.com" target="_blank" style="color:#5c6bc0;font-weight:bold">→ Netlify Upload</a>
+</div>
+
+<!-- ── Ladescreen ── -->
+<div id="loading" style="text-align:center;padding:60px 20px;color:white">
+  <div style="font-size:3em">⭐</div>
+  <div style="margin-top:10px;font-size:1.1em">Lade Oskars Daten…</div>
+</div>
+
+<!-- ── Online-Indikator ── -->
+<div id="sync-indicator" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:white;border-radius:999px;padding:4px 12px;font-size:.72em;z-index:500;display:flex;align-items:center;gap:5px"></div>
+
+<!-- ── App ── -->
+<div class="app-header" id="app-header" style="flex-direction:column;gap:6px">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+    <div style="width:40px"></div>
+    <h1 id="app-title" style="font-size:2.3em;text-align:center;flex:1;font-weight:900" onmouseenter="speakTitle()" ontouchstart="speakTitle()">Oskars Wunsch-Maschine</h1>
+    <button class="burger-btn" onclick="openMenu()">☰</button>
+  </div>
+  <div id="ab-header-badge" style="display:none;background:rgba(255,255,255,.22);border-radius:20px;padding:4px 14px;font-size:.85em;font-weight:bold;letter-spacing:.5px">Abenteuer-Zeit</div>
+</div>
+<div class="week-lbl" id="week-label"></div>
+<div id="vacation-countdown" style="display:none;text-align:center;margin:-8px 0 10px;font-size:.92em;font-weight:600;color:rgba(255,255,255,.92);animation:none"></div>
+
+<!-- ── Abenteuer-Zeit ── -->
+<div id="abenteuer-mode" style="display:none">
+
+  <!-- Begrüßung -->
+  <div class="card" id="ab-welcome-card" style="background:linear-gradient(135deg,#fff9e6,#fff3cc);text-align:center;padding:20px">
+    <div id="ab-ferien-name" style="font-size:1.5em;font-weight:900;color:#c86a00;font-family:'Arial Rounded MT Bold',Arial,sans-serif"></div>
+    <div id="ab-ferien-dates" style="font-size:.82em;color:#a06000;margin-top:4px"></div>
+    <div id="ab-ferien-countdown" style="margin-top:14px;display:none">
+      <div style="font-size:.72em;color:#a06000;margin-bottom:2px">Schulzeit beginnt wieder in</div>
+      <div id="ab-days-left" style="font-size:2.8em;font-weight:900;color:#c86a00;line-height:1;font-family:'Arial Rounded MT Bold',Arial,sans-serif"></div>
+      <div style="font-size:.72em;color:#a06000;margin-top:2px">Tagen</div>
+    </div>
+    <div id="ab-log-summary" style="margin-top:12px;font-size:.85em;color:#b07000;font-weight:bold"></div>
+  </div>
+
+  <!-- Preview-Sperre Banner -->
+  <div id="ab-preview-lock-banner" style="display:none;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:14px;padding:16px 20px;text-align:center;margin-bottom:4px">
+    <div style="margin-bottom:8px"><svg style="width:2em;height:2em;stroke:#c86a00;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <div style="font-size:.88em;color:#c86a00;font-weight:bold">Noch nicht verfügbar</div>
+    <div style="font-size:.78em;color:#a06000;margin-top:4px">Die Abenteuer-Maschine startet 3 Tage vor den Ferien</div>
+  </div>
+
+  <!-- Ferienziele -->
+  <div class="card" id="ab-ziele-card">
+    <h2 style="font-size:1.2em;color:#c86a00;display:flex;align-items:center;gap:7px"><svg style="width:1.2em;height:1.2em;flex-shrink:0;stroke:#c86a00;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Meine Ferienziele</h2>
+    <p style="font-size:.78em;color:#aaa;margin-bottom:12px;text-align:center">Was möchte ich in den Ferien machen? Das bestimme ich selbst!</p>
+    <div id="ab-ziele-list" style="margin-bottom:12px"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="ab-ziel-input" placeholder="Mein Ziel…" style="flex:1;border:2px solid #f6a821;border-radius:10px;padding:8px 12px;font-size:.9em;outline:none;background:#fff9e6"/>
+      <button onclick="addAbenteuerZiel()" style="background:#c86a00;color:white;border:none;border-radius:10px;padding:8px 16px;font-size:1em;font-weight:bold;cursor:pointer">+</button>
+    </div>
+  </div>
+
+  <!-- Tages-Logbuch -->
+  <div class="card" id="ab-log-card">
+    <h2 style="font-size:1.2em;color:#c86a00;display:flex;align-items:center;gap:7px"><svg style="width:1.2em;height:1.2em;flex-shrink:0;stroke:#c86a00;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Was hab ich heute erlebt?</h2>
+    <p id="ab-today-label" style="font-size:.78em;color:#aaa;margin-bottom:12px;text-align:center"></p>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+      <input type="text" id="ab-log-input" placeholder="z.B. Im See geschwommen, Buch gelesen …" style="flex:1;border:2px solid #f6a821;border-radius:10px;padding:9px 13px;font-size:.9em;outline:none;background:#fff9e6" onkeydown="if(event.key==='Enter')addAbLogFree()"/>
+      <button onclick="addAbLogFree()" style="background:#c86a00;color:white;border:none;border-radius:10px;padding:9px 16px;font-size:1em;font-weight:bold;cursor:pointer;flex-shrink:0">+</button>
+    </div>
+    <div id="ab-today-log"></div>
+  </div>
+
+  <!-- Alle Abenteuer -->
+  <div class="card" id="ab-all-log-card">
+    <h2 style="font-size:1.2em;color:#c86a00;display:flex;align-items:center;gap:7px"><svg style="width:1.2em;height:1.2em;flex-shrink:0;stroke:#c86a00;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Alle meine Abenteuer</h2>
+    <div id="ab-all-log" style="font-size:.85em;line-height:2"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:center;flex-wrap:wrap">
+      <button onclick="printAbenteuer()" style="display:flex;align-items:center;gap:7px;background:#c86a00;color:white;border:2px solid #c86a00;border-radius:10px;padding:9px 18px;font-size:.85em;font-weight:bold;cursor:pointer">
+        <svg style="width:1.1em;height:1.1em;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Ausdrucken
+      </button>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Schulmode ── -->
+<div id="school-mode">
+
+<!-- Day grid -->
+<div class="card">
+  <h2 style="font-size:1.2em;flex-wrap:wrap;gap:4px"><span style="display:inline-flex;align-items:center;gap:6px;flex-shrink:0"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Was hab ich heute geschafft?</span><button onclick="document.getElementById('info-popup').style.display='flex'" style="background:#e8eaf6;border:none;border-radius:50%;width:20px;height:20px;font-size:.7em;cursor:pointer;color:#5c6bc0;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">ℹ</button></h2>
+  <div class="day-grid" id="day-grid"></div>
+</div>
+
+<!-- Smileys -->
+<div class="card">
+  <h2 style="font-size:1.2em"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle class="smiley-eye" cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle class="smiley-eye" cx="15" cy="9" r="1" fill="currentColor" stroke="none"/></svg> Oskars Superkräfte</h2>
+  <p style="font-size:.72em;color:#aaa;margin-bottom:8px;text-align:center;">5 Smileys = 1 <svg class="hi" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Joker</p>
+  <div id="smiley-days"></div>
+  <div class="section-div"></div>
+  <div style="font-size:.78em;font-weight:bold;color:#666;margin-bottom:4px;">Kategorien</div>
+  <div class="tag-list" id="smiley-types"></div>
+  <div class="add-row" style="margin-top:8px">
+    <input type="text" id="new-smiley-type" placeholder="Neue Kategorie..." style="flex:1;min-width:120px"/>
+    <button onclick="addSmileyType()">+</button>
+  </div>
+</div>
+
+<!-- Score + Jokers -->
+<div class="card">
+  <h2 style="font-size:1.2em"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Meine Punkte</h2>
+  <div class="score-big"><div class="score-num" id="score-num">0</div><div class="score-sub" id="score-sub"></div></div>
+  <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+  <div class="prog-lbl" id="prog-lbl"></div>
+  <div class="jrow">
+    <div class="jbox"><div class="big" id="j-bonus">0</div><div class="lbl"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Bonus<br>gesamt</div></div>
+    <div class="jbox"><div class="big" id="j-smiley">0</div><div class="lbl"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/></svg> Smileys<br>gesamt</div></div>
+    <div class="jbox"><div class="big" id="j-avail">0</div><div class="lbl"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Joker<br>verfügbar</div></div>
+  </div>
+  <div class="joker-section">
+    <div class="joker-section-title">Joker-Sammlung <svg style="width:.9em;height:.9em;vertical-align:middle;stroke:#777;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></div>
+    <div class="joker-row" id="joker-visual"></div>
+    <div id="joker-dots"></div>
+  </div>
+
+</div>
+
+<!-- Joker-Maschine -->
+<div class="card">
+  <h2 style="font-size:1.2em"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> Oskars Wünsche</h2>
+  <p style="font-size:.75em;color:#aaa;margin-bottom:10px;text-align:center;">Sammle Joker und tausche sie gegen Wünsche ein!</p>
+  <div id="goal-list"></div>
+  <div class="add-row">
+    <div style="position:relative;display:inline-flex;align-items:center;flex-shrink:0">
+    <select id="goal-emoji" style="font-size:1.6em;padding:0;padding-right:18px;border:none;background:transparent;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none">
+      <optgroup label="Deine Wünsche">
+        <option>🧸</option><option>📺</option><option>🏎️</option><option>👕</option>
+        <option>⚽</option><option>🚐</option><option>🎭</option><option>🧱</option>
+        <option>🎮</option><option>🚲</option><option>🎵</option><option>🏊</option>
+      </optgroup>
+      <optgroup label="Essen &amp; Trinken">
+        <option>🍦</option><option>🍕</option><option>🍫</option><option>🍿</option>
+        <option>🍔</option><option>🧁</option>
+      </optgroup>
+      <optgroup label="Erlebnisse">
+        <option>🎢</option><option>🎡</option><option>🎪</option><option>🦁</option>
+        <option>🏖️</option><option>🎠</option><option>🎯</option>
+      </optgroup>
+      <optgroup label="Sport &amp; Hobby">
+        <option>🛹</option><option>🎸</option><option>🎨</option><option>🔭</option>
+        <option>🥊</option><option>🎲</option><option>🃏</option>
+      </optgroup>
+      <optgroup label="Sonstiges">
+        <option>📚</option><option>⭐</option><option>🎁</option><option>🏆</option>
+        <option>💎</option><option>🚀</option><option>🦸</option>
+      </optgroup>
+    </select>
+    <svg style="position:absolute;right:2px;top:50%;transform:translateY(-50%);pointer-events:none;width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <select id="goal-article" style="border:2px solid #ddd;border-radius:8px;padding:6px 4px;font-size:.82em;outline:none">
+      <option>ein</option><option>eine</option><option>einen</option>
+      <option>das</option><option>der</option><option>die</option>
+    </select>
+    <input type="text" id="goal-text" placeholder="Wunsch..." style="flex:1;min-width:90px"/>
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <button type="button" onclick="const i=document.getElementById('goal-cost');i.value=(+i.value||0)+1" style="width:30px;height:22px;border:2px solid #667eea;border-radius:6px;background:#eef0ff;color:#667eea;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
+        <button type="button" onclick="const i=document.getElementById('goal-cost');i.value=Math.max(1,(+i.value||1)-1)" style="width:30px;height:22px;border:2px solid #667eea;border-radius:6px;background:#eef0ff;color:#667eea;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+      </div>
+      <input type="number" id="goal-cost" value="3" min="1" style="width:38px;text-align:center;border:2px solid #ddd;border-radius:8px;padding:4px 0;font-size:.9em;-moz-appearance:textfield"/>
+    </div>
+    <button onclick="addGoal()">+</button>
+  </div>
+</div>
+
+<!-- Punkte-Bank -->
+<div class="card">
+  <h2 style="font-size:1.2em"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- face circle -->
+    <circle cx="12" cy="14" r="9.5"/>
+    <!-- left ear -->
+    <path d="M5 7 Q3.5 2 7 3.5 Q9.5 5 8 8"/>
+    <!-- right ear -->
+    <path d="M19 7 Q20.5 2 17 3.5 Q14.5 5 16 8"/>
+    <!-- snout -->
+    <ellipse cx="12" cy="17.5" rx="4" ry="2.8"/>
+    <!-- nostrils -->
+    <circle cx="10.2" cy="17.5" r="0.9" fill="currentColor" stroke="none"/>
+    <circle cx="13.8" cy="17.5" r="0.9" fill="currentColor" stroke="none"/>
+    <!-- left eye -->
+    <circle cx="8.5" cy="12.5" r="1" fill="currentColor" stroke="none"/>
+    <!-- right eye with wink -->
+    <circle class="pig-eye" cx="15.5" cy="12.5" r="1" fill="currentColor" stroke="none"/>
+  </svg> Oskars Sparschwein</h2>
+  <p style="font-size:.8em;color:#888;margin-bottom:14px;text-align:center;line-height:1.5">Hier landen deine Punkte, wenn du eine Woche nicht ganz geschafft hast.<br>Spar sie auf — sobald du 10 hast, bekommst du einen Joker!</p>
+  <div style="display:flex;align-items:center;gap:12px;padding:0 4px">
+    <div style="flex:1">
+      <div style="font-size:.78em;color:#667eea;font-weight:bold;margin-bottom:6px">Gespart: <span id="bank-pts">0</span> / 10 Punkte</div>
+      <div style="background:#eef0ff;border-radius:999px;height:10px;overflow:hidden">
+        <div id="bank-bar" style="height:100%;border-radius:999px;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .4s;width:0%"></div>
+      </div>
+      <div style="font-size:.68em;color:#aaa;margin-top:4px">10 Punkte = 1 Joker</div>
+    </div>
+    <button id="bank-btn" onclick="bankToJoker()" style="flex-shrink:0;padding:8px 14px;border-radius:12px;border:2px solid #667eea;background:#eef0ff;color:#667eea;font-size:.82em;font-weight:bold;cursor:pointer;opacity:.4;pointer-events:none;line-height:1.4">
+      Einlösen<br><span id="bank-btn-lbl" style="font-size:.82em;font-weight:normal"></span>
+    </button>
+  </div>
+</div>
+
+<!-- Diplom -->
+<div class="card">
+  <h2 style="font-size:1.2em"><svg class="svg-icon" style="width:1.8em;height:1.8em" viewBox="0 0 100 90" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- outer silhouette -->
+  <polygon points="32,5 68,5 97,34 50,88 3,34"/>
+  <!-- girdle -->
+  <line x1="3" y1="34" x2="97" y2="34"/>
+  <!-- crown: from table corners to outer girdle already in polygon -->
+  <!-- crown inner facets -->
+  <line x1="32" y1="5" x2="28" y2="34"/>
+  <line x1="68" y1="5" x2="72" y2="34"/>
+  <line x1="32" y1="5" x2="50" y2="34"/>
+  <line x1="68" y1="5" x2="50" y2="34"/>
+  <!-- pavilion facets -->
+  <line x1="28" y1="34" x2="50" y2="88"/>
+  <line x1="50" y1="34" x2="50" y2="88"/>
+  <line x1="72" y1="34" x2="50" y2="88"/>
+</svg> Oskars Schatzkiste</h2>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+    <button class="small-btn" style="text-decoration:none;background:#5c6bc0;color:white;border-radius:20px;padding:6px 14px;font-size:.8em;" onclick="openDiploma()">Kiste öffnen</button>
+    <button id="diploma-close-btn" class="small-btn" style="display:none;text-decoration:none;background:#e74c3c;color:white;border-radius:20px;padding:6px 14px;font-size:.8em;" onclick="closeDiploma()">Kiste schließen ✕</button>
+  </div>
+  <div id="diploma-section"></div>
+</div>
+
+<!-- Neue Woche -->
+<div class="card" style="background:transparent;box-shadow:none;padding-top:4px;padding-bottom:4px;margin-top:100px">
+  <h2 style="font-size:.85em;color:white;animation:none"><svg class="svg-icon" style="color:white;animation:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Wechsel</h2>
+  <button class="btn-week" onclick="newWeek()" style="background:transparent;border:2px solid rgba(255,255,255,.7);box-shadow:none">Neue Woche starten</button>
+  <button class="btn-year" onclick="newSchoolYear()" style="background:transparent;border:2px solid rgba(255,255,255,.5);animation:none">Neues Schuljahr</button>
+  <button class="btn-year" style="background:linear-gradient(135deg,#e74c3c,#c0392b);margin-top:8px" onclick="resetAll()">Alles zurücksetzen</button>
+  <button class="small-btn" onclick="toggleHistory()" style="color:white;text-decoration:none;opacity:.7">Verlauf ▾</button>
+  <div class="history-panel" id="history-panel"></div>
+</div>
+
+</div><!-- end #school-mode -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// NRW CALENDAR
+// ═══════════════════════════════════════════════════════
+const NRW_VACATIONS = [
+  // 2024/2025
+  {n:'Herbstferien',f:'2024-10-14',t:'2024-10-25'},{n:'Weihnachtsferien',f:'2024-12-23',t:'2025-01-06'},
+  {n:'Osterferien',f:'2025-04-07',t:'2025-04-19'},{n:'Pfingstferien',f:'2025-06-10',t:'2025-06-20'},
+  {n:'Sommerferien',f:'2025-07-14',t:'2025-08-26'},
+  // 2025/2026
+  {n:'Herbstferien',f:'2025-10-13',t:'2025-10-25'},{n:'Weihnachtsferien',f:'2025-12-22',t:'2026-01-06'},
+  {n:'Osterferien',f:'2026-03-30',t:'2026-04-11'},{n:'Pfingstferien',f:'2026-05-26',t:'2026-06-06'},
+  {n:'Sommerferien',f:'2026-06-27',t:'2026-08-08'},
+  // 2026/2027
+  {n:'Herbstferien',f:'2026-10-05',t:'2026-10-17'},{n:'Weihnachtsferien',f:'2026-12-23',t:'2027-01-06'},
+  {n:'Osterferien',f:'2027-03-29',t:'2027-04-10'},{n:'Pfingstferien',f:'2027-05-25',t:'2027-06-05'},
+  {n:'Sommerferien',f:'2027-06-26',t:'2027-08-07'},
+  // 2027/2028
+  {n:'Herbstferien',f:'2027-10-04',t:'2027-10-16'},{n:'Weihnachtsferien',f:'2027-12-22',t:'2028-01-05'},
+  {n:'Osterferien',f:'2028-04-10',t:'2028-04-22'},{n:'Pfingstferien',f:'2028-05-19',t:'2028-05-29'},
+  {n:'Sommerferien',f:'2028-06-24',t:'2028-08-05'},
+];
+
+const NRW_HOLIDAYS = [
+  // 2025
+  '2025-01-01','2025-04-18','2025-04-21','2025-05-01','2025-05-29','2025-06-09','2025-06-19',
+  '2025-10-03','2025-11-01','2025-12-25','2025-12-26',
+  // 2026
+  '2026-01-01','2026-04-03','2026-04-06','2026-05-01','2026-05-14','2026-05-25','2026-06-04',
+  '2026-10-03','2026-11-01','2026-12-25','2026-12-26',
+  // 2027
+  '2027-01-01','2027-03-26','2027-03-29','2027-05-01','2027-05-06','2027-05-17','2027-05-27',
+  '2027-10-03','2027-11-01','2027-12-25','2027-12-26',
+  // 2028
+  '2028-01-01','2028-04-14','2028-04-17','2028-05-01','2028-05-25','2028-06-05','2028-06-15',
+  '2028-10-03','2028-11-01','2028-12-25','2028-12-26',
+];
+
+const HOLIDAY_NAMES = {
+  '2026-01-01':'Neujahr','2026-04-03':'Karfreitag','2026-04-06':'Ostermontag',
+  '2026-05-01':'Tag der Arbeit','2026-05-14':'Himmelfahrt','2026-05-25':'Pfingstmontag',
+  '2026-06-04':'Fronleichnam','2026-10-03':'Tag d. Einheit','2026-11-01':'Allerheiligen',
+  '2026-12-25':'Weihnachten','2026-12-26':'Weihnachten',
+  '2027-01-01':'Neujahr','2027-03-26':'Karfreitag','2027-03-29':'Ostermontag',
+  '2027-05-01':'Tag der Arbeit','2027-05-06':'Himmelfahrt','2027-05-17':'Pfingstmontag',
+  '2027-05-27':'Fronleichnam','2027-10-03':'Tag d. Einheit','2027-11-01':'Allerheiligen',
+  '2027-12-25':'Weihnachten','2027-12-26':'Weihnachten',
+  '2028-01-01':'Neujahr','2028-04-14':'Karfreitag','2028-04-17':'Ostermontag',
+  '2028-05-01':'Tag der Arbeit','2028-05-25':'Himmelfahrt','2028-06-05':'Pfingstmontag',
+  '2028-06-15':'Fronleichnam','2028-10-03':'Tag d. Einheit','2028-11-01':'Allerheiligen',
+  '2028-12-25':'Weihnachten','2028-12-26':'Weihnachten',
+};
+
+function getDayInfo(iso) {
+  // is vacation?
+  for(const v of NRW_VACATIONS) {
+    if(iso >= v.f && iso <= v.t) return {off:true, type:'vacation', name:v.n};
+  }
+  // is public holiday?
+  if(NRW_HOLIDAYS.includes(iso)) return {off:true, type:'holiday', name:HOLIDAY_NAMES[iso]||'Feiertag'};
+  return {off:false};
+}
+
+function getWeekDates(mondayISO) {
+  const days = [];
+  for(let i=0;i<5;i++){
+    const d = new Date(mondayISO);
+    d.setDate(d.getDate()+i);
+    const iso = d.toISOString().slice(0,10);
+    const info = getDayInfo(iso);
+    days.push({iso, info, dayNum:i});
+  }
+  return days;
+}
+
+function countSchoolWeeksInYear(yearLabel) {
+  // yearLabel e.g. "2025/2026"
+  const [y1] = yearLabel.split('/').map(Number);
+  // school year roughly Sep 1 to Jun 30 of next year
+  // Count Mon-Fri non-vacation non-holiday days
+  let schoolDays = 0;
+  const start = new Date(`${y1}-08-20`);
+  const end   = new Date(`${y1+1}-07-15`);
+  const d = new Date(start);
+  while(d <= end) {
+    const dow = d.getDay();
+    if(dow>=1&&dow<=5) {
+      const iso = d.toISOString().slice(0,10);
+      const info = getDayInfo(iso);
+      if(!info.off) schoolDays++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return { schoolDays, schoolWeeks: Math.round(schoolDays/5) };
+}
+
+// ═══════════════════════════════════════════════════════
+// FIREBASE CONFIG  ← hier deine Daten eintragen!
+// ═══════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyA9r7rZDbcm6RQ92sDmk-b54PTc2pVduoU",
+  authDomain:        "oskar-monte.firebaseapp.com",
+  databaseURL:       "https://oskar-monte-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "oskar-monte",
+  storageBucket:     "oskar-monte.firebasestorage.app",
+  messagingSenderId: "714862029685",
+  appId:             "1:714862029685:web:7dcb008bf9b6aa1be9813c"
+};
+
+const FIREBASE_CONFIGURED = !FIREBASE_CONFIG.apiKey.startsWith('DEIN');
+
+let _db   = null;
+let _ref  = null;
+let _state = null; // lokaler Cache
+let _editUnlocked = false;    // Vergangene Tage bearbeitbar?
+let _abPreview = false;       // Nur Vorschau Abenteuer-Modus (nicht gespeichert)
+let _schoolPreview = false;   // Nur Vorschau Schul-Modus während Ferien (nicht gespeichert)
+let _vacAutoFetchDone = false; // Ferien nur einmal beim Start auto-fetchen
+
+function initFirebase() {
+  if (!FIREBASE_CONFIGURED) return;
+  firebase.initializeApp(FIREBASE_CONFIG);
+  _db  = firebase.database();
+  _ref = _db.ref('oskar/state');
+
+  // Echtzeit-Listener: sobald jemand anderes speichert → sofort rendern
+  _ref.on('value', snap => {
+    const data = snap.val();
+    _state = data ? migrate(data) : defaultState();
+    document.getElementById('loading').style.display = 'none';
+    render();
+    // Einmalig beim Start: Ferien auto-aktualisieren wenn nötig
+    if(!_vacAutoFetchDone){ _vacAutoFetchDone=true; autoFetchVacationsIfNeeded(); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+function getState() {
+  if (FIREBASE_CONFIGURED) return _state || defaultState();
+  // Fallback: localStorage (nur wenn Firebase nicht konfiguriert)
+  const raw = localStorage.getItem('oskar-v4');
+  return raw ? migrate(JSON.parse(raw)) : defaultState();
+}
+
+function saveState(s) {
+  _state = s;
+  if (FIREBASE_CONFIGURED) {
+    _ref.set(JSON.parse(JSON.stringify(s))); // Firebase mag keine undefined-Werte
+  } else {
+    localStorage.setItem('oskar-v4', JSON.stringify(s));
+  }
+}
+
+function migrate(s){
+  if(!s.settings) s.settings={bonusPerJoker:3,smileyPerJoker:5,editPin:'1234'};
+  if(!s.settings.bonusPerJoker) s.settings.bonusPerJoker=3;
+  if(!s.settings.smileyPerJoker) s.settings.smileyPerJoker=5;
+  if(!s.settings.editPin) s.settings.editPin='1234';
+  if(!s.settings.customVacations)    s.settings.customVacations=[];
+  if(!s.settings.fetchedVacations)   s.settings.fetchedVacations=[];
+  if(!s.settings.vacationsFetchedAt) s.settings.vacationsFetchedAt='';
+  if(!s.abenteuer) s.abenteuer={manual:false,ziele:[],log:[]};
+  if(!s.eurToJoker) s.eurToJoker={euros:10,jokers:5};
+  if(!s.smileyTypes) s.smileyTypes=defaultSmileyTypes();
+  if(!s.allSmileys) s.allSmileys=[];
+  if(!s.goals) s.goals=[];
+  if(s.activeGoalIdx===undefined) s.activeGoalIdx=null;
+  if(!s.history) s.history=[];
+  if(s.bonusPool===undefined) s.bonusPool=0;
+  if(s.smileyPool===undefined) s.smileyPool=0;
+  if(s.jokersSpent===undefined) s.jokersSpent=0;
+  if(!s.schoolYear) s.schoolYear=currentSchoolYear();
+  if(!s.fulfilledGoals) s.fulfilledGoals=[];
+  // Bestehende Ziele: "1x " entfernen und Artikel ergänzen wenn noch keiner da
+  const autoArticle = {
+    'comic':'ein','lego':'ein','tonie':'ein','schwimmbad':'ein',
+    'kino':'einen','fahrrad':'ein','skateboard':'ein','fußball':'einen',
+    'pizza':'eine','eis':'ein','teddy':'einen','rennwagen':'einen',
+    'fernseher':'einen','kleidung':'ein','wohnmobil':'ein','maske':'eine',
+  };
+  // Bekannte Textkorrekturen
+  const textFixes = {
+    'Schwimmbad': 'Schwimmbadbesuch',
+    '1x Comic Heft': 'Comic Heft',
+    '1x Lego Set': 'Lego Set',
+    '1x Tonie': 'Tonie',
+    '1x Schwimmbad': 'Schwimmbadbesuch',
+  };
+  s.goals = s.goals.map(g => {
+    let text = g.text || '';
+    // Bekannte Texte korrigieren
+    if(textFixes[text]) text = textFixes[text];
+    // "1x " Präfix entfernen (Fallback)
+    if(text.startsWith('1x ')) text = text.slice(3);
+    // Artikel ergänzen wenn noch keiner gespeichert
+    let article = g.article || '';
+    if(!article) {
+      const key = Object.keys(autoArticle).find(k => text.toLowerCase().includes(k));
+      article = key ? autoArticle[key] : 'ein';
+    }
+    return {...g, text, article};
+  });
+  s.days = s.days.map(d=>({
+    mathe:d.mathe||false, deutsch:d.deutsch||false, bonus:!!(d.bonus),
+    matheFilled:d.matheFilled||false, deutschFilled:d.deutschFilled||false,
+    smileys:d.smileys||[]
+  }));
+  return s;
+}
+
+function defaultSmileyTypes(){
+  return ['Besondere Hilfsbereitschaft','Ordentlicher Arbeitsplatz','Aufgeräumter Schulranzen','Streit schlichten'];
+}
+
+function currentSchoolYear(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth()+1;
+  return m>=8 ? `${y}/${y+1}` : `${y-1}/${y}`;
+}
+
+function defaultState(){
+  return {
+    weekStart: mondayISO(),
+    days: Array(5).fill(null).map(()=>({mathe:false,deutsch:false,bonus:false,matheFilled:false,deutschFilled:false,smileys:[]})),
+    bonusPool:0, smileyPool:0, jokersSpent:0,
+    settings:{bonusPerJoker:3,smileyPerJoker:5,editPin:'1234'},
+    abenteuer:{manual:false,ziele:[],log:[]},
+    eurToJoker:{euros:10,jokers:5},
+    activeGoalIdx:null,
+    goals:[
+      {emoji:'📚',article:'ein',text:'Comic Heft',jokerCost:3,fulfilledDate:null},
+      {emoji:'🧱',article:'ein',text:'Lego Set',jokerCost:10,fulfilledDate:null},
+      {emoji:'🎵',article:'ein',text:'Tonie',jokerCost:6,fulfilledDate:null},
+      {emoji:'🏊',article:'ein',text:'Schwimmbadbesuch',jokerCost:4,fulfilledDate:null},
+    ],
+    smileyTypes:defaultSmileyTypes(),
+    allSmileys:[],
+    fulfilledGoals:[],
+    schoolYear:currentSchoolYear(),
+    history:[]
+  };
+}
+
+function mondayISO(){
+  const d=new Date();
+  const diff=d.getDay()===0?-6:1-d.getDay();
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+function weekLabel(iso){
+  const d=new Date(iso),fri=new Date(d);
+  fri.setDate(d.getDate()+4);
+  return `${d.getDate()}.${d.getMonth()+1}. – ${fri.getDate()}.${fri.getMonth()+1}.${fri.getFullYear()}`;
+}
+function fmtDate(iso){
+  if(!iso) return '';
+  const d=new Date(iso);
+  return `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// COMPUTE
+// ═══════════════════════════════════════════════════════
+const DAYS_SHORT = ['Mo','Di','Mi','Do','Fr'];
+const HEART_ICO = `<svg style="width:1em;height:1em;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+
+function compute(state){
+  const {days,bonusPool,smileyPool,jokersSpent,settings} = state;
+  const bpj = settings.bonusPerJoker||3;
+  const spj = settings.smileyPerJoker||5;
+
+  const thisWeekBonus  = days.filter(d=>d.bonus&&d.mathe&&d.deutsch).length;
+  const totalBonus     = (bonusPool||0)+thisWeekBonus;
+  const bonusJokers    = Math.floor(totalBonus/bpj);
+  const bonusRem       = totalBonus%bpj;
+
+  const thisWeekSmileys= days.reduce((n,d)=>n+(d.smileys||[]).length,0);
+  const totalSmileys   = (smileyPool||0)+thisWeekSmileys;
+  const smileyJokers   = Math.floor(totalSmileys/spj);
+  const smileyRem      = totalSmileys%spj;
+
+  const goalJokers     = state.goalJokers||0;
+  const totalJokers    = bonusJokers+smileyJokers+goalJokers;
+
+  const bankPoints     = state.bankPoints||0;
+  const bankCanConvert = bankPoints>=10;
+
+  let score=0, jokersUsed=0;
+  days.forEach(d=>{
+    if(d.mathe||d.matheFilled) score++;
+    if(d.deutsch||d.deutschFilled) score++;
+    if(d.matheFilled) jokersUsed++;
+    if(d.deutschFilled) jokersUsed++;
+  });
+
+  const jokersAvail = Math.max(0, totalJokers-(jokersSpent||0)-jokersUsed);
+
+  // Weekly goal based on school days this week
+  const weekDays = getWeekDates(state.weekStart);
+  const schoolDays = weekDays.filter(d=>!d.info.off).length;
+  const weekGoal = schoolDays*2;
+
+  const goalReached = score>=weekGoal && weekGoal>0;
+
+  return {
+    thisWeekBonus,totalBonus,bonusJokers,bonusRem,bpj,
+    thisWeekSmileys,totalSmileys,smileyJokers,smileyRem,spj,
+    goalJokers,totalJokers,jokersUsed,jokersAvail,
+    bankPoints,bankCanConvert,
+    score,weekGoal,schoolDays,goalReached,weekDays
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function render(){
+  const state=getState();
+  const c=compute(state);
+  // Auto-exit: wenn manuelle Aktivierung läuft aber keine Ferien mehr → zurück zur Schule
+  if(state.abenteuer?.manual && !getCurrentVacation()){
+    const today = new Date().toISOString().slice(0,10);
+    const lastVac = [...getAllVacations()].reverse().find(v => v.t < today);
+    if(lastVac && today > lastVac.t){
+      state.abenteuer.manual = false;
+      saveState(state);
+    }
+  }
+  const abMode = isAbenteuerZeit(state);
+
+  // Switch between school and vacation mode
+  document.getElementById('school-mode').style.display = abMode ? 'none' : '';
+  document.getElementById('abenteuer-mode').style.display = abMode ? '' : 'none';
+  document.getElementById('ab-header-badge').style.display = abMode ? '' : 'none';
+  document.getElementById('week-label').style.display = abMode ? 'none' : '';
+
+  if(abMode){
+    document.body.classList.add('abenteuer-mode-active');
+    document.getElementById('app-title').textContent = 'Oskars Abenteuer-Maschine';
+    document.getElementById('vacation-countdown').style.display='none';
+    renderAbenteuerZeit(state);
+  } else {
+    document.body.classList.remove('abenteuer-mode-active');
+    document.getElementById('app-title').textContent = 'Oskars Wunsch-Maschine';
+    document.getElementById('week-label').textContent='Woche '+weekLabel(state.weekStart)+' · '+state.schoolYear;
+    // Countdown bis nächste Ferien
+    const cdEl = document.getElementById('vacation-countdown');
+    const today = new Date().toISOString().slice(0,10);
+    const next = getAllVacations().find(v => v.f > today);
+    if(next){
+      const days = Math.round((new Date(next.f) - new Date()) / 86400000);
+      if(days <= 42){
+        cdEl.style.display='';
+        cdEl.innerHTML = days===0
+          ? `🎉 Heute beginnen die ${next.n}!`
+          : days===1
+          ? `Morgen beginnen die ${next.n}!`
+          : `Noch <strong style="font-size:1.25em">${days}</strong> Tage bis zu den ${next.n}`;
+      } else {
+        cdEl.style.display='none';
+      }
+    } else {
+      cdEl.style.display='none';
+    }
+    buildDayGrid(state,c);
+    renderScore(state,c);
+    renderGoals(state,c);
+    renderSmileys(state);
+    if(document.getElementById('stat-grid').children.length) renderStats(state,c);
+  }
+}
+
+// ── Day Grid ──────────────────────────────────────────
+function buildDayGrid(state,c){
+  const grid=document.getElementById('day-grid');
+  grid.innerHTML='';
+  const {days} = state;
+  const wd = c.weekDays;
+
+  // Header row
+  const empty=div(); grid.appendChild(empty);
+  wd.forEach(d=>{
+    const h=div('day-header'+(d.info.off?(d.info.type==='holiday'?' holiday-col':' vacation-col'):''));
+    h.innerHTML=`${DAYS_SHORT[d.dayNum]}<br><span style="font-size:.75em;color:inherit">${new Date(d.iso).getDate()}.${new Date(d.iso).getMonth()+1}</span>`;
+    grid.appendChild(h);
+  });
+
+  // Mathe row
+  const SVG_MATHE=`<svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M4 20V4h16"/><line x1="4" y1="20" x2="20" y2="4"/></svg>`;
+  const SVG_DEUTSCH=`<svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
+  const SVG_STAR=`<svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const ml=div('row-label'); ml.innerHTML=SVG_MATHE+' Mathe'; grid.appendChild(ml);
+  days.forEach((day,i)=>{
+    const wd=c.weekDays[i];
+    if(wd.info.off){const b=div('check-btn day-off');b.innerHTML=`<span>${wd.info.name||'Frei'}</span>`;grid.appendChild(b);return;}
+    if(day.mathe){const b=div('check-btn on-mathe');b.textContent='✓';b.onclick=()=>toggleTask(i,'mathe');grid.appendChild(b);}
+    else if(day.matheFilled){const b=div('fill-slot used');b.innerHTML=HEART_ICO;b.title='Joker eingesetzt – tippen zum Rückgängigmachen';b.onclick=()=>unfill(i,'mathe');grid.appendChild(b);}
+    else{
+      const wrap=div();wrap.style.cssText='display:flex;flex-direction:column;gap:3px;align-items:center;';
+      const b=div('check-btn');b.textContent='';b.onclick=()=>toggleTask(i,'mathe');wrap.appendChild(b);
+      if(c.jokersAvail>0&&c.jokersUsed<1){const fb=div('fill-slot');fb.innerHTML=HEART_ICO;fb.title='Joker einsetzen';fb.onclick=()=>fillSlot(i,'mathe');wrap.appendChild(fb);}
+      grid.appendChild(wrap);
+    }
+  });
+
+  // Deutsch row
+  const dl=div('row-label');dl.innerHTML=SVG_DEUTSCH+' Deutsch';grid.appendChild(dl);
+  days.forEach((day,i)=>{
+    const wd=c.weekDays[i];
+    if(wd.info.off){const b=div('check-btn day-off');b.innerHTML=`<span>${wd.info.name||'Frei'}</span>`;grid.appendChild(b);return;}
+    if(day.deutsch){const b=div('check-btn on-deutsch');b.textContent='✓';b.onclick=()=>toggleTask(i,'deutsch');grid.appendChild(b);}
+    else if(day.deutschFilled){const b=div('fill-slot used');b.innerHTML=HEART_ICO;b.title='Joker eingesetzt – tippen zum Rückgängigmachen';b.onclick=()=>unfill(i,'deutsch');grid.appendChild(b);}
+    else{
+      const wrap=div();wrap.style.cssText='display:flex;flex-direction:column;gap:3px;align-items:center;';
+      const b=div('check-btn');b.textContent='';b.onclick=()=>toggleTask(i,'deutsch');wrap.appendChild(b);
+      if(c.jokersAvail>0&&c.jokersUsed<1){const fb=div('fill-slot');fb.innerHTML=HEART_ICO;fb.title='Joker einsetzen';fb.onclick=()=>fillSlot(i,'deutsch');wrap.appendChild(fb);}
+      grid.appendChild(wrap);
+    }
+  });
+
+  // Bonus row
+  const bonusThisWeek=days.filter(d=>d.bonus&&d.mathe&&d.deutsch).length;
+  const bl=div('row-label');bl.innerHTML=`${SVG_STAR} Bonus<br><span style="font-size:.75em;color:#bbb">${bonusThisWeek} diese Woche</span>`;grid.appendChild(bl);
+  days.forEach((day,i)=>{
+    const wd=c.weekDays[i];
+    if(wd.info.off){const b=div('check-btn day-off');b.textContent='';grid.appendChild(b);return;}
+    const canEarn=day.mathe&&day.deutsch;
+    const b=div('check-btn'+(day.bonus&&canEarn?' on-bonus':''));
+    b.innerHTML=day.bonus&&canEarn?SVG_STAR:'';
+    if(!canEarn){b.style.opacity='.2';b.style.cursor='default';b.title='Erst Mathe+Deutsch!';}
+    else b.onclick=()=>toggleBonus(i);
+    grid.appendChild(b);
+  });
+}
+
+// ── Score + Joker Visual ──────────────────────────────
+function renderScore(state,c){
+  const el=document.getElementById('score-num');
+  el.textContent=c.score;
+  el.className='score-num '+(c.goalReached?'goal-reached':'not-reached');
+  document.getElementById('score-sub').textContent=`von ${c.weekGoal} Punkten (${c.schoolDays} Schultage)`;
+  const pct=c.weekGoal>0?Math.min(c.score/c.weekGoal*100,100):0;
+  const bar=document.getElementById('prog-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=c.goalReached?'linear-gradient(90deg,#9c27b0,#e91e63)':'linear-gradient(90deg,#5c6bc0,#764ba2)';
+  document.getElementById('prog-lbl').textContent=c.goalReached?'🎉 Wochenziel erreicht!':`Noch ${c.weekGoal-c.score} Punkt${c.weekGoal-c.score===1?'':'e'} bis zum Ziel`;
+  document.getElementById('j-bonus').textContent=c.totalBonus;
+  document.getElementById('j-smiley').textContent=c.totalSmileys;
+  document.getElementById('j-avail').textContent=c.jokersAvail;
+
+  // Joker tokens visual
+  const vis=document.getElementById('joker-visual');
+  vis.innerHTML='';
+  const totalEarned=c.totalJokers;
+  const totalSpent=(state.jokersSpent||0)+c.jokersUsed;
+  if(totalEarned===0){vis.innerHTML='<span style="font-size:.75em;color:#ccc;">Noch keine Joker – du schaffst das! <svg style="width:.9em;height:.9em;vertical-align:middle;stroke:#ccc;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M6 9c0-3 2-5 6-5s6 2 6 5c0 2-1 4-3 5H9c-2-1-3-3-3-5z"/><path d="M9 14v6m6-6v6M7 20h10"/></svg></span>';}
+  else{
+    for(let i=0;i<totalEarned;i++){
+      const spent=i<totalSpent;
+      const t=div('j-token '+(spent?'j-spent-token':(i<c.bonusJokers?'j-bonus-token':'j-smiley-token')));
+      t.innerHTML=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+      t.title=spent?'Eingesetzt':(i<c.bonusJokers?'Bonus-Joker':'Smiley-Joker');
+      vis.appendChild(t);
+    }
+  }
+
+  // Progress dots
+  const dotsEl=document.getElementById('joker-dots');
+  dotsEl.innerHTML='';
+  // Bonus dots
+  const bdr=div('dots-row');
+  const bLbl=div();bLbl.style.cssText='font-size:.7em;color:#888;width:90px;flex-shrink:0';
+  bLbl.innerHTML=`<svg style="width:1em;height:1em;vertical-align:middle;stroke:#888;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${c.bonusRem}/${c.bpj} bis Joker`;
+  bdr.appendChild(bLbl);
+  const HEART_SVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  for(let i=0;i<c.bpj;i++){const d2=div('dot'+(i<c.bonusRem?' on':''));d2.innerHTML=HEART_SVG;bdr.appendChild(d2);}
+  dotsEl.appendChild(bdr);
+  // Smiley dots
+  const sdr=div('dots-row');
+  const sLbl=div();sLbl.style.cssText='font-size:.7em;color:#888;width:90px;flex-shrink:0';
+  sLbl.innerHTML=`<svg style="width:1em;height:1em;vertical-align:middle;stroke:#888;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="#888" stroke="none"/><circle cx="15" cy="9" r="1" fill="#888" stroke="none"/></svg> ${c.smileyRem}/${c.spj} bis Joker`;
+  sdr.appendChild(sLbl);
+  for(let i=0;i<c.spj;i++){const d2=div('dot'+(i<c.smileyRem?' on-green':''));d2.innerHTML=HEART_SVG;sdr.appendChild(d2);}
+  dotsEl.appendChild(sdr);
+
+  // Bank — zeigt auch die laufenden Wochenpunkte wenn Ziel noch nicht erreicht
+  const bankPts = c.bankPoints;
+  const weekContrib = (!c.goalReached && c.score > 0) ? c.score : 0;
+  const bankTotal = bankPts + weekContrib;
+  const savedW  = Math.min(bankPts / 10 * 100, 100);
+  const weekW   = Math.min(bankTotal / 10 * 100, 100) - savedW;
+  const bankBar = document.getElementById('bank-bar');
+  bankBar.style.width = savedW + '%';
+  // Wochenpunkte-Segment als helleres Overlay
+  let weekSeg = document.getElementById('bank-bar-week');
+  if(!weekSeg){
+    weekSeg = document.createElement('div');
+    weekSeg.id = 'bank-bar-week';
+    weekSeg.style.cssText = 'position:absolute;top:0;height:100%;border-radius:999px;background:rgba(102,126,234,.35);transition:width .4s,left .4s';
+    bankBar.parentElement.style.position = 'relative';
+    bankBar.parentElement.appendChild(weekSeg);
+  }
+  weekSeg.style.left  = savedW + '%';
+  weekSeg.style.width = weekContrib > 0 ? weekW + '%' : '0%';
+  const lbl = document.getElementById('bank-pts');
+  if(weekContrib > 0){
+    lbl.innerHTML = `${bankPts} <span style="font-size:.85em;color:#aaa;font-weight:normal">+ ${weekContrib} diese Woche</span>`;
+  } else {
+    lbl.textContent = bankPts;
+  }
+  document.getElementById('bank-btn-lbl').innerHTML = `10 Pkt = 1 ${HEART_ICO}`;
+  const btn = document.getElementById('bank-btn');
+  if(c.bankCanConvert){
+    btn.style.opacity='1';btn.style.pointerEvents='auto';
+    btn.style.background='linear-gradient(135deg,#667eea,#764ba2)';
+    btn.style.color='white';btn.style.borderColor='#667eea';
+  } else {
+    btn.style.opacity='.4';btn.style.pointerEvents='none';
+    btn.style.background='#eef0ff';btn.style.color='#667eea';btn.style.borderColor='#667eea';
+  }
+}
+
+// ── Goals ─────────────────────────────────────────────
+function renderGoals(state,c){
+  const list=document.getElementById('goal-list');
+  list.innerHTML='';
+  if(!state.goals.length){list.innerHTML='<p style="font-size:.78em;color:#ccc;text-align:center;padding:10px">Noch keine Wünsche – füge welche hinzu! 👇</p>';return;}
+  state.goals.forEach((g,i)=>{
+    const done=!!g.fulfilledDate;
+    const can=!done&&c.jokersAvail>=g.jokerCost;
+    const pct=Math.min(c.jokersAvail/g.jokerCost*100,100);
+    const row=div('goal-item'+(done?' fulfilled-item':''));
+    const emoji=div('g-emoji');emoji.textContent=g.emoji;
+    const info=div('g-info');
+    const name=div('g-name'+(done?' done':''));name.textContent=(g.article?g.article+' ':'')+g.text;
+    const sub=div('g-sub');
+    sub.innerHTML=done?`✅ Eingelöst am ${fmtDate(g.fulfilledDate)}`:`${c.jokersAvail} / ${g.jokerCost} ${HEART_ICO}`;
+    const prog=div('g-prog');
+    const fill=div('g-prog-bar'+(can?' can':''));fill.style.width=pct+'%';
+    prog.appendChild(fill);
+    info.append(name,sub);
+    if(!done) info.appendChild(prog);
+
+    if(done){
+      const badge=div('done-badge');badge.textContent='🎉 Geschafft!';
+      row.append(emoji,info,badge);
+    } else {
+      const btn=el('button','redeem-btn');
+      btn.innerHTML=can?'Einlösen! 🎁':`${g.jokerCost} ${HEART_ICO}`;
+      btn.disabled=!can;
+      btn.onclick=()=>redeemGoal(i);
+      const rm=el('span','g-rm');rm.textContent='✕';rm.onclick=()=>removeGoal(i);
+      row.append(emoji,info,btn,rm);
+    }
+    list.appendChild(row);
+  });
+}
+
+// ── Smileys ───────────────────────────────────────────
+function renderSmileys(state){
+  const cont=document.getElementById('smiley-days');
+  cont.innerHTML='';
+  state.days.forEach((day,i)=>{
+    const wd=getWeekDates(state.weekStart)[i];
+    const row=div('smiley-day-row');
+    const lbl=div('sd-lbl');lbl.textContent=DAYS_SHORT[i];
+    const tags=div('sd-tags');
+    if(wd.info.off){tags.innerHTML=`<span style="font-size:.7em;color:#ccc">${wd.info.name||'Frei'}</span>`;row.append(lbl,tags);cont.appendChild(row);return;}
+    (day.smileys||[]).forEach((s,si)=>{
+      const t=div('s-tag');t.innerHTML=`<svg style="width:1.4em;height:1.4em;vertical-align:middle;display:inline-block;stroke:#667eea;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-right:4px" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2" fill="none"/><circle cx="9" cy="9" r="1" fill="#667eea" stroke="none"/><circle cx="15" cy="9" r="1" fill="#667eea" stroke="none"/></svg>${s} <span class="rm" onclick="removeSmiley(${i},${si})">✕</span>`;tags.appendChild(t);
+    });
+    const sel=el('select','s-sel');
+    sel.innerHTML=`<option value="" disabled selected>bitte auswählen</option>`+state.smileyTypes.map(t=>`<option>${t}</option>`).join('');
+    const btn=el('button','s-add');btn.textContent='+';btn.onclick=()=>{if(!sel.value){showToast('⚠️ Bitte eine Kategorie auswählen!');return;}addSmiley(i,sel.value);};
+    row.append(lbl,tags,sel,btn);
+    cont.appendChild(row);
+  });
+  const tl=document.getElementById('smiley-types');
+  tl.innerHTML='';
+  state.smileyTypes.forEach((t,i)=>{
+    const tag=div('tag');tag.innerHTML=`${t} <span class="rm" onclick="removeSmileyType(${i})">✕</span>`;
+    tl.appendChild(tag);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════
+function toggleTask(dayIdx,field){
+  if(isDayLocked(dayIdx)){showToast('🔒 Tag gesperrt – PIN im Menü eingeben');return;}
+  const state=getState();
+  const cBefore=compute(state);
+  state.days[dayIdx][field]=!state.days[dayIdx][field];
+  const cAfter=compute(state);
+  saveState(state);render();
+  // Ziel gerade erreicht? → Feier-Screen zeigen
+  if(!cBefore.goalReached && cAfter.goalReached){
+    const old=document.getElementById('celebration-overlay');
+    if(old) old.remove();
+    setTimeout(()=>showCelebration('goal'),300);
+  }
+}
+
+function toggleBonus(dayIdx){
+  if(isDayLocked(dayIdx)){showToast('🔒 Tag gesperrt – PIN im Menü eingeben');return;}
+  const state=getState();
+  const day=state.days[dayIdx];
+  if(!day.mathe||!day.deutsch){showToast('⚠️ Erst Mathe + Deutsch erledigen!');return;}
+  day.bonus=!day.bonus;
+  saveState(state);
+  const c=compute(state);render();
+  if(day.bonus){
+    if(c.bonusRem===0) showToast('🎉 Joker verdient! Jetzt '+c.totalJokers+' 🃏');
+    else showToast(`⭐ Bonuspunkt! Noch ${c.bpj-c.bonusRem} bis zum nächsten Joker`);
+  }
+}
+
+function fillSlot(dayIdx,field){
+  if(isDayLocked(dayIdx)){showToast('🔒 Tag gesperrt – PIN im Menü eingeben');return;}
+  const state=getState();
+  const c=compute(state);
+  if(c.jokersAvail<1){showToast('⚠️ Kein Joker verfügbar!');return;}
+  if(c.jokersUsed>=1){showToast('⚠️ Nur 1 Joker pro Woche einsetzbar!');return;}
+  state.days[dayIdx][field+'Filled']=true;
+  saveState(state);render();
+  showToast('🃏 Joker eingesetzt!');
+}
+
+function unfill(dayIdx,field){
+  if(isDayLocked(dayIdx)){showToast('🔒 Tag gesperrt – PIN im Menü eingeben');return;}
+  const state=getState();
+  state.days[dayIdx][field+'Filled']=false;
+  saveState(state);render();
+  showToast('↩️ Joker zurückgegeben');
+}
+
+function addSmiley(dayIdx,type){
+  if(isDayLocked(dayIdx)){showToast('🔒 Tag gesperrt – PIN im Menü eingeben');return;}
+  const state=getState();
+  state.days[dayIdx].smileys.push(type);
+  state.allSmileys.push({date:new Date().toISOString().slice(0,10),type});
+  const c=compute(state);
+  saveState(state);render();
+  showToast('😊 Super Leistung, Oskar!');
+  // Check if new smiley joker earned
+  const c2=compute(state);
+  if(c2.smileyRem===0&&c2.smileyJokers>c.smileyJokers) showToast('🎉 Smiley-Joker verdient! Insgesamt '+c2.totalJokers+' 🃏');
+}
+
+function removeSmiley(dayIdx,si){
+  if(isDayLocked(dayIdx)){showToast('🔒 Tag gesperrt – PIN im Menü eingeben');return;}
+  const state=getState();
+  state.days[dayIdx].smileys.splice(si,1);
+  saveState(state);renderSmileys(state);
+  render();
+}
+
+function addSmileyType(){
+  const input=document.getElementById('new-smiley-type');
+  const name=input.value.trim();if(!name)return;
+  const state=getState();state.smileyTypes.push(name);saveState(state);
+  input.value='';renderSmileys(state);showToast('✅ Kategorie hinzugefügt!');
+}
+
+function removeSmileyType(i){
+  const state=getState();state.smileyTypes.splice(i,1);saveState(state);renderSmileys(state);
+}
+
+function addGoal(){
+  const emoji=document.getElementById('goal-emoji').value;
+  const article=document.getElementById('goal-article').value;
+  const text=document.getElementById('goal-text').value.trim();
+  const cost=parseInt(document.getElementById('goal-cost').value);
+  if(!text||!cost||cost<1){showToast('⚠️ Bitte Name und Joker-Kosten eingeben!');return;}
+  const state=getState();
+  state.goals.push({emoji,article,text,jokerCost:cost,fulfilledDate:null});
+  saveState(state);
+  document.getElementById('goal-text').value='';
+  document.getElementById('goal-cost').value='';
+  const c=compute(state);renderGoals(state,c);
+  showToast('✅ Wunsch hinzugefügt!');
+}
+
+function removeGoal(i){
+  const state=getState();state.goals.splice(i,1);saveState(state);render();
+}
+
+function redeemGoal(i){
+  const state=getState();
+  const c=compute(state);
+  const g=state.goals[i];
+  if(c.jokersAvail<g.jokerCost){showToast('⚠️ Nicht genug Joker!');return;}
+  if(!confirm(`"${g.text}" für ${g.jokerCost} Joker einlösen? 🎉`)) return;
+  state.jokersSpent=(state.jokersSpent||0)+g.jokerCost;
+  g.fulfilledDate=new Date().toISOString().slice(0,10);
+  state.fulfilledGoals.push({...g, schoolYear:state.schoolYear});
+  saveState(state);render();
+  showToast('🎉 Wunsch erfüllt! Genieß es, Oskar!');
+}
+
+// ── New Week ──────────────────────────────────────────
+function showCelebration(reason){
+  const ov=document.createElement('div');
+  ov.id='celebration-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#e91e8c,#667eea,#3f51b5,#0097a7,#e91e8c,#ff4081,#e91e8c);background-size:500% 500%;animation:celebrate-bg 4s ease infinite;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent';
+  // Text
+  const msg=document.createElement('div');
+  msg.style.cssText='text-align:center;color:white;padding:32px 20px;position:relative;z-index:2;animation:celebrate-in .5s cubic-bezier(.34,1.56,.64,1) both;max-width:100%;box-sizing:border-box';
+  const isSmall=window.innerWidth<430;
+  const isTiny=window.innerWidth<360;
+  msg.innerHTML=`
+    <div style="font-size:${isTiny?'1.9em':isSmall?'2.2em':'5.2em'};font-weight:bold;margin-bottom:14px;font-family:'Arial Rounded MT Bold',Arial,sans-serif;line-height:1.2;word-break:break-word">Super gemacht!</div>
+    <div style="font-size:${isTiny?'1.05em':isSmall?'1.2em':'2.4em'};line-height:1.6;font-family:'Arial Rounded MT Bold',Arial,sans-serif">${reason==='bank' ? 'Du hast 10 Punkte gespart<br>und bekommst einen Joker!' : 'Du hast dein Ziel erreicht<br>und bekommst einen Joker!'}</div>
+    <div style="font-size:${isTiny?'.82em':isSmall?'.9em':'1.56em'};opacity:.6;margin-top:${isSmall?'16px':'32px'};font-family:Arial,sans-serif">Tippe irgendwo um weiterzumachen</div>
+  `;
+  ov.appendChild(msg);
+  // Hüpfende Herzchen — Physik wie die Smilies
+  const hp=`<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`;
+  // Ausgewogene Farbmischung — je 1× weiß, hellrosa, rosa, pink, rot-pink, lila-rosa, dunkelrosa, flieder
+  const cols=['rgba(255,255,255,.75)','rgba(255,180,200,.90)','rgba(255,120,160,.90)','rgba(255,80,130,.95)','rgba(220,80,120,.95)','rgba(240,140,180,.88)','rgba(200,100,140,.92)','rgba(230,160,210,.85)'];
+  // Herzchen als Luftballons: Spitze unten, steigen auf, prallen weich ab
+  const _hScale = window.innerWidth < 360 ? 0.45 : window.innerWidth < 430 ? 0.6 : 1;
+  const pxSizes=[110,75,95,60,130,50,85,70,115,55,100,65,80,120,90,140,280,260,280,270].map(s=>Math.round(s*_hScale));
+  const hearts=pxSizes.map((px,i)=>{
+    const col=cols[i%cols.length];
+    const el=document.createElement('div');
+    el.style.cssText=`position:absolute;left:0;top:0;width:${px}px;height:${px}px;pointer-events:none;z-index:1;will-change:transform`;
+    el.innerHTML=`<svg viewBox="0 0 24 24" width="${px}" height="${px}" style="display:block" fill="${col}">${hp}</svg>`;
+    ov.appendChild(el);
+    const w=window.innerWidth, h=window.innerHeight;
+    const cx = px/2 + Math.random()*(w-px);   // Mittelpunkt der Schlangenbahn
+    return{
+      el, size:px, r:px/2,
+      cx,                                       // Zentrum der Horizontal-Welle
+      y: h*0.1 + Math.random()*h*0.95,
+      vy: -(16+Math.random()*18),              // langsam aufwärts
+      waveAmp:  17 + Math.random()*28,         // Schlangenbreite px (links/rechts)
+      waveFreq: 0.08+Math.random()*0.10,       // Wellenfrequenz Hz — sanft & tief
+      wavePhase:Math.random()*Math.PI*2,
+      rotPhase: Math.random()*Math.PI*2,
+      rotFreq:  0.12+Math.random()*0.13,
+      nextBurst: performance.now() + 8000 + Math.random()*25000, // 8–33s bis zum Platzen
+      bursting:  false,
+    };
+  });
+
+  let hLast=performance.now();
+  let hRaf;
+  function heartTick(now){
+    const dt=Math.min((now-hLast)/1000,0.05); hLast=now;
+    const t=now/1000;
+    const w=window.innerWidth, h=window.innerHeight;
+
+    for(const b of hearts){
+      b.y += b.vy*dt;
+
+      // Schlangenweg: x folgt Sinuskurve um Mittelpunkt cx
+      const wave = Math.sin(t*b.waveFreq*Math.PI*2 + b.wavePhase)*b.waveAmp;
+      let x = b.cx + wave;
+      // Weiche Wandabstoßung: Federkraft proportional zur Überschreitung
+      const margin=b.r;
+      if(x < margin)        b.cx += (margin - x) * 0.04;
+      if(x+b.size > w-margin) b.cx -= (x+b.size-(w-margin)) * 0.04;
+      x = b.cx + wave;
+
+      // Oben raus → unten wieder starten
+      if(b.y+b.size < 0){
+        b.y  = h + b.size;
+        b.cx = b.size/2 + Math.random()*(w-b.size);
+        b.wavePhase = Math.random()*Math.PI*2;
+      }
+
+      // Sanftes Kippen ±7°
+      const tilt = Math.cos(t*b.rotFreq*Math.PI*2+b.rotPhase)*7;
+
+      // Platzen: Herz verschwindet, Kreisoutline skaliert auf
+      // Herz muss vollständig auf dem Screen sein (kein Rand-Clipping)
+      const onScreen = x>0 && x+b.size<w && b.y>0 && b.y+b.size<h;
+      if(!b.bursting && now >= b.nextBurst && !onScreen) b.nextBurst=now+1500;
+      if(!b.bursting && now >= b.nextBurst && onScreen && b.size<200){
+        b.bursting=true;
+        b.el.style.opacity='0';
+        // Kreis-Outline an aktueller Position
+        const ring=document.createElement('div');
+        const col=b.el.querySelector('svg').getAttribute('fill')||'rgba(255,120,160,.9)';
+        const rs=Math.min(b.size,136); // Ringgrösse — skaliert max auf ~300px
+        const rx=(x+b.r-rs/2).toFixed(1), ry=(b.y+b.r-rs/2).toFixed(1);
+        ring.style.cssText=`position:absolute;left:${rx}px;top:${ry}px;width:${rs}px;height:${rs}px;pointer-events:none;z-index:2;transform-origin:center;animation:heart-pop 1s ease-out forwards`;
+        ring.innerHTML=`<svg viewBox="0 0 24 24" width="${rs}" height="${rs}"><circle cx="12" cy="12" r="10" fill="none" stroke="${col}" stroke-width="1.5"/></svg>`;
+        ov.appendChild(ring);
+        // Nach 1s: Kreis weg, Herz unten neu starten
+        setTimeout(()=>{
+          ring.remove();
+          b.bursting=false;
+          b.y=h+b.size;
+          b.cx=b.size/2+Math.random()*(w-b.size);
+          b.wavePhase=Math.random()*Math.PI*2;
+          b.el.style.opacity='1';
+          b.nextBurst=performance.now()+12000+Math.random()*25000;
+        },1000);
+      }
+
+      if(!b.bursting)
+        b.el.style.transform=`translate(${x.toFixed(1)}px,${b.y.toFixed(1)}px) rotate(${tilt.toFixed(2)}deg)`;
+    }
+
+    // Sanfte Abstoßung: Federkraft verschiebt cx graduell, kein Rucken
+    for(let i=0;i<hearts.length;i++){
+      for(let j=i+1;j<hearts.length;j++){
+        const a=hearts[i],b=hearts[j];
+        const ax=a.cx+Math.sin(t*a.waveFreq*Math.PI*2+a.wavePhase)*a.waveAmp;
+        const bx=b.cx+Math.sin(t*b.waveFreq*Math.PI*2+b.wavePhase)*b.waveAmp;
+        const dx=bx-ax, dy=(b.y+b.r)-(a.y+a.r);
+        const dist2=dx*dx+dy*dy, minD=a.r+b.r;
+        if(dist2<minD*minD&&dist2>0.01){
+          const dist=Math.sqrt(dist2);
+          const push=(minD-dist)/minD * 18 * dt; // sanfte Kraft, skaliert mit dt
+          const nx=dx/dist;
+          a.cx-=nx*push;
+          b.cx+=nx*push;
+        }
+      }
+    }
+    hRaf=requestAnimationFrame(heartTick);
+  }
+  hRaf=requestAnimationFrame(heartTick);
+
+  ov.addEventListener('click',()=>{cancelAnimationFrame(hRaf);ov.remove();});
+  document.body.appendChild(ov);
+}
+
+function newWeek(){
+  if(!confirm('Neue Woche starten?\n\nTageseinträge werden zurückgesetzt.\nBonuspunkte und Joker bleiben erhalten!')) return;
+  const state=getState();
+  const c=compute(state);
+  state.history.push({week:weekLabel(state.weekStart),weekStart:state.weekStart,score:c.score,goal:c.weekGoal,goalReached:c.goalReached,bonus:c.thisWeekBonus,smileys:c.thisWeekSmileys,jokers:c.totalJokers});
+  state.bonusPool=(state.bonusPool||0)+c.thisWeekBonus;
+  state.smileyPool=(state.smileyPool||0)+c.thisWeekSmileys;
+  state.jokersSpent=(state.jokersSpent||0)+c.jokersUsed;
+  // Wochenziel erreicht → 1 Joker direkt gutschreiben
+  if(c.goalReached){
+    state.goalJokers=(state.goalJokers||0)+1;
+    setTimeout(()=>showCelebration('goal'),300);
+  } else if(c.score>0){
+    // Ziel verfehlt → Punkte in die Bank
+    state.bankPoints=(state.bankPoints||0)+c.score;
+    showToast(`💰 ${c.score} Punkte in die Bank eingezahlt!`);
+  }
+  state.weekStart=mondayISO();
+  state.days=Array(5).fill(null).map(()=>({mathe:false,deutsch:false,bonus:false,matheFilled:false,deutschFilled:false,smileys:[]}));
+  saveState(state);render();
+  showToast('🚀 Neue Woche! Viel Erfolg, Oskar!');
+}
+
+function bankToJoker(){
+  const state=getState();
+  if((state.bankPoints||0)<10){showToast('⚠️ Noch nicht genug Punkte!');return;}
+  state.bankPoints-=10;
+  state.goalJokers=(state.goalJokers||0)+1;
+  saveState(state);render();
+  // Eventuell vorhandenes altes Overlay entfernen, dann Feier-Screen zeigen
+  const old=document.getElementById('celebration-overlay');
+  if(old) old.remove();
+  setTimeout(()=>showCelebration('bank'),300);
+}
+
+function resetAll(){
+  if(!confirm('⚠️ ALLES zurücksetzen?\n\nAlle Punkte, Joker, Wünsche, Verlauf und Smileys werden gelöscht.\n\nDas kann nicht rückgängig gemacht werden!')) return;
+  if(FIREBASE_CONFIGURED){
+    _ref.remove();
+  } else {
+    localStorage.removeItem('oskar-v4');
+    _state = null;
+    render();
+  }
+  showToast('🔄 Alles zurückgesetzt. Viel Erfolg, Oskar!');
+}
+
+function newSchoolYear(){
+  const state=getState();
+  const c=compute(state);
+  // Übrig gebliebene Joker und Bankpunkte berechnen
+  const carryJokers = c.jokersAvail;
+  const carryBank   = state.bankPoints||0;
+  const carryMsg = (carryJokers>0||carryBank>0)
+    ? `\n\n✅ Übertragen ins neue Schuljahr:\n  • ${carryJokers} Joker\n  • ${carryBank} Bankpunkte`
+    : '';
+  if(!confirm('Neues Schuljahr starten?'+carryMsg+'\n\nEingelöste Wünsche bleiben im Diplom gespeichert!')) return;
+  // Archive current year summary
+  state.history.push({week:'Schuljahresende '+state.schoolYear,score:c.score,goal:c.weekGoal,goalReached:c.goalReached,bonus:c.thisWeekBonus,smileys:c.thisWeekSmileys});
+  // Reset joker economy — übrige Joker als goalJokers übertragen, Bankpunkte behalten
+  state.bonusPool=0;state.smileyPool=0;state.jokersSpent=0;
+  state.goalJokers=carryJokers; // übrige Joker werden mitgenommen
+  state.bankPoints=carryBank;   // Bankpunkte werden mitgenommen
+  state.weekStart=mondayISO();
+  state.days=Array(5).fill(null).map(()=>({mathe:false,deutsch:false,bonus:false,matheFilled:false,deutschFilled:false,smileys:[]}));
+  state.schoolYear=currentSchoolYear();
+  // Reset goals redeemed (keep the goals list, reset fulfilled status)
+  state.goals.forEach(g=>g.fulfilledDate=null);
+  // Keep allSmileys and fulfilledGoals for diploma history
+  saveState(state);render();
+  const toastExtra = carryJokers>0||carryBank>0 ? ` +${carryJokers} Joker & ${carryBank} Bankpunkte übertragen!` : '';
+  showToast('🎒 Neues Schuljahr gestartet!'+toastExtra);
+}
+
+function toggleHistory(){
+  const panel=document.getElementById('history-panel');
+  if(panel.style.display==='block'){panel.style.display='none';return;}
+  const state=getState();
+  panel.innerHTML='';
+  [...(state.history||[])].reverse().slice(0,20).forEach(h=>{
+    const d=div('history-entry');
+    d.textContent=`${h.week}: ${h.score||0}/${h.goal||10} Punkte ${h.goalReached?'✓':'✗'} | +${h.bonus||0} Bonus, +${h.smileys||0} Smileys`;
+    panel.appendChild(d);
+  });
+  if(!state.history?.length) panel.innerHTML='<div class="history-entry" style="color:#ccc">Noch kein Verlauf.</div>';
+  panel.style.display='block';
+}
+
+// ── Diploma ───────────────────────────────────────────
+function getFunnyMotivation(stars, goals, jokersAvail) {
+  // Offene Ziele: noch nicht eingelöst, sortiert nach "wie nah ist Oskar dran"
+  const open = (goals||[])
+    .filter(g => !g.fulfilledDate)
+    .map(g => ({...g, missing: Math.max(0, g.jokerCost - jokersAvail), label: `${g.emoji} ${g.article?g.article+' ':''}${g.text}`}))
+    .sort((a,b) => a.missing - b.missing);
+
+  const nearest  = open[0];  // das nächste erreichbare Ziel
+  const second   = open[1];  // das übernächste Ziel
+  const furthest = open[open.length-1]; // das fernste Ziel
+
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // Suffix: erwähnt ein weiteres Ziel als Ansporn
+  const suffix = second && second !== nearest
+    ? ` Und danach wartet schon "${second.label}"!`
+    : furthest && furthest !== nearest
+    ? ` Und irgendwann schaffst du auch "${furthest.label}"!`
+    : '';
+
+  // Texte mit Zielbezug
+  const withGoal = nearest ? pick([
+    nearest.missing === 0
+      ? `Psst! Du hast gerade genug Joker für "${nearest.label}"! Worauf wartest du noch?${suffix}`
+      : `Noch ${nearest.missing} Joker und "${nearest.label}" gehört dir! Das schaffst du locker!${suffix}`,
+    nearest.missing === 0
+      ? `Die Wunsch-Maschine leuchtet schon – "${nearest.label}" wartet auf dich!${suffix}`
+      : `Stell dir vor: ${nearest.missing} Joker noch, dann gibt es "${nearest.label}". Klingt das nicht grossartig?${suffix}`,
+    nearest.missing <= 2
+      ? `"${nearest.label}" ist zum Greifen nah! Noch ${nearest.missing} Joker – die Wunsch-Maschine drückt die Daumen!${suffix}`
+      : `Die Wunsch-Maschine hat nachgerechnet: Mit etwas mehr Einsatz bist du in ${nearest.missing} Wochen bei "${nearest.label}"!${suffix}`,
+    furthest && furthest !== nearest
+      ? `Kleines Ziel: "${nearest.label}" (${nearest.missing} Joker). Grosses Ziel: "${furthest.label}". Beides schaffst du!`
+      : `Noch ${nearest.missing} Joker und du hältst "${nearest.label}" in den Händen! Die Wunsch-Maschine wartet!`,
+  ]) : null;
+
+  // Texte ohne Ziel (als Fallback oder Abwechslung)
+  const withoutGoal = {
+    5: pick([
+      "Oskar, du bist so gut – die Wunsch-Maschine kann kaum mithalten!",
+      "Wissenschaftler rätseln: Ist Oskar ein Mensch oder eine Lernmaschine?",
+      "Die Wunsch-Maschine möchte Oskars Autogramm. Bitte anstellen!",
+    ]),
+    4: pick([
+      "Fast perfekt! Noch ein Bonuspunkt und die Wunsch-Maschine dreht durch!",
+      "Oskar, du bist so nah dran – selbst dein Ranzen drückt die Daumen!",
+      "Die Wunsch-Maschine flüstert: Noch ein Bonuspunkt und dein nächster Wunsch ist zum Greifen nah!",
+    ]),
+    3: pick([
+      "Drei Sterne! Das Sofa ruft – aber die Wunsch-Maschine ruft lauter!",
+      "Oskar, irgendwo da drin steckt ein Fünf-Sterne-Held. Raus damit!",
+      "Die Wunsch-Maschine sagt: Noch ein bisschen Gas und dein nächster Wunsch rückt näher!",
+    ]),
+    1: pick([
+      "Die Wunsch-Maschine wartet sehnsüchtig. Bitte rette sie!",
+      "Selbst das Pausenbrot glaubt, dass Oskar das besser kann.",
+      "Achtung: Bei so wenig Sternen muss die Wunsch-Maschine noch sehr lange warten!",
+    ]),
+  };
+  const fallback = withoutGoal[stars>=5?5:stars>=4?4:stars>=3?3:1];
+
+  // Meistens den Ziel-Text zeigen, manchmal den witzigen
+  return (withGoal && Math.random() > 0.3) ? withGoal : fallback;
+}
+
+function closeDiploma(){
+  document.getElementById('diploma-section').innerHTML='';
+  document.getElementById('diploma-close-btn').style.display='none';
+}
+
+function openDiploma(){
+  document.getElementById('diploma-close-btn').style.display='inline-block';
+  const state=getState();
+  const c=compute(state);
+  const section=document.getElementById('diploma-section');
+  section.innerHTML='';
+
+  // SVG icon helpers
+  const ico=(path,extra='')=>`<svg style="width:1em;height:1em;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round${extra}" viewBox="0 0 24 24">${path}</svg>`;
+  const ICO_TROPHY   = ico('<rect x="2" y="10" width="20" height="11" rx="2"/><path d="M2 13h20"/><path d="M2 10 Q12 3 22 10"/><rect x="9" y="12" width="6" height="4" rx="1"/><circle cx="12" cy="14" r="1"/>');  // pirate chest
+  const ICO_STAR_ON  = ico('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',';fill:currentColor');
+  const ICO_STAR_OFF = ico('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>');
+  const ICO_TARGET   = ico('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>');
+  const ICO_BOOK     = ico('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>');
+  const ICO_SMILEY   = ico('<circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/>');
+  const ICO_CALENDAR = ico('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>');
+  const ICO_CHECK    = ico('<polyline points="20 6 9 17 4 12"/>');
+  const ICO_HEART    = ico('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>');
+  const ICO_GIFT     = ico('<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>');
+  const ICO_SPARK    = ico('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',';fill:currentColor;color:#9c27b0;stroke:#9c27b0');
+
+  // Calculate stats from history
+  const hist=state.history||[];
+  const totalWeeks=hist.length;
+  const successWeeks=hist.filter(h=>h.goalReached).length;
+  const totalBonusDays=hist.reduce((n,h)=>n+(h.bonus||0),0)+c.thisWeekBonus;
+  const totalSmileyDays=(state.allSmileys||[]).length;
+  const totalPossibleDays=hist.reduce((n,h)=>n+(h.goal||0),0)+c.weekGoal;
+  const totalScoreDays=hist.reduce((n,h)=>n+(h.score||0),0)+c.score;
+  const completionPct=totalPossibleDays>0?Math.round(totalScoreDays/totalPossibleDays*100):0;
+  const bonusPct=totalWeeks>0?Math.round(totalBonusDays/(totalWeeks*5)*100):0;
+  const successPct=totalWeeks>0?Math.round(successWeeks/totalWeeks*100):0;
+
+  const stars=completionPct>=90?5:completionPct>=75?4:completionPct>=60?3:completionPct>=40?2:1;
+  const starsHtml=ICO_STAR_ON.repeat(stars)+ICO_STAR_OFF.repeat(5-stars);
+
+  const box=div('diploma-box');
+  box.innerHTML=`
+    <div class="stars-row">${starsHtml}</div>
+    <p style="text-align:center;font-size:.78em;color:#888;margin-bottom:2px">
+      ${stars===5?'Oskar ist ein absoluter Superstar!':stars>=4?'Oskar macht das richtig toll!':stars>=3?'Oskar ist auf einem guten Weg!':'Oskar kann noch mehr zeigen – weiter so!'}
+    </p>
+    <p style="text-align:center;font-size:.78em;color:#888;font-style:normal;margin-top:0;margin-bottom:16px">
+      ${getFunnyMotivation(stars, state.goals||[], c.jokersAvail)}
+    </p>`;
+
+  // Performance bars
+  const bars=[
+    {label:`${ICO_TARGET} Ziele geschafft`,pct:successPct,color:'#5c6bc0'},
+    {label:`${ICO_BOOK} Was ich gelernt hab`,pct:completionPct,color:'#764ba2'},
+    {label:`${ICO_STAR_ON} Extra-Einsatz`,pct:bonusPct,color:'#9c27b0'},
+    {label:`${ICO_SMILEY} Oskars Superkräfte`,pct:Math.min(totalSmileyDays*5,100),color:'#e06b9a'},
+  ];
+  bars.forEach(b=>{
+    const row=div('perf-bar-row');
+    const lbl=div('perf-bar-label');lbl.innerHTML=b.label;
+    const wrap=div('perf-bar-wrap');
+    const fill=div('perf-bar-fill');fill.style.cssText=`width:${b.pct}%;background:${b.color}`;
+    const pctLbl=div('perf-bar-pct');pctLbl.textContent=b.pct+'%';
+    fill.appendChild(pctLbl);wrap.appendChild(fill);
+    row.append(lbl,wrap);box.appendChild(row);
+  });
+
+  // Stats summary
+  const school=div('school-info');
+  school.innerHTML=`
+    ${ICO_CALENDAR} Schulwochen dabei: <strong>${totalWeeks}</strong><br>
+    ${ICO_CHECK} Ziele geschafft: <strong>${successWeeks} von ${totalWeeks}</strong><br>
+    ${ICO_STAR_ON} Extra-Einsatz insgesamt: <strong>${totalBonusDays}</strong><br>
+    ${ICO_SMILEY} Superkräfte gezeigt: <strong>${totalSmileyDays}</strong><br>
+    ${ICO_HEART} Joker gesammelt: <strong>${c.totalJokers+(state.jokersSpent||0)}</strong>
+  `;
+  box.appendChild(school);
+
+  // Fulfilled goals
+  const fulfilled=state.fulfilledGoals||[];
+  const thisYearFulfilled=fulfilled.filter(g=>g.schoolYear===state.schoolYear||!g.schoolYear);
+  if(thisYearFulfilled.length){
+    const fl=div('fulfilled-list');
+    fl.innerHTML=`<div style="font-size:.78em;font-weight:bold;color:#5c6bc0;margin-bottom:6px">${ICO_GIFT} Eingelöste Wünsche</div>`;
+    thisYearFulfilled.forEach(g=>{
+      const row=div('fulfilled-item');
+      row.innerHTML=`<span style="font-size:1.2em">${g.emoji}</span> <span style="flex:1">${g.text}</span> <span class="fulfilled-date">${fmtDate(g.fulfilledDate)}</span>`;
+      fl.appendChild(row);
+    });
+    box.appendChild(fl);
+  }
+
+  // Smiley highlights
+  if(totalSmileyDays>0){
+    const counts={};
+    (state.allSmileys||[]).forEach(s=>{counts[s.type]=(counts[s.type]||0)+1;});
+    const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    const highlight=div();
+    highlight.style.cssText='margin-top:24px;font-size:.82em;color:#555;text-align:center;';
+    highlight.innerHTML=`${ICO_SPARK} Oskars Sozial-Superpower: <strong>"${top[0]}"</strong> – ${top[1]}× gezeigt! Das ist beeindruckend!`;
+    box.appendChild(highlight);
+  }
+
+  section.appendChild(box);
+}
+
+// ── Burger Menu ───────────────────────────────────────
+function speakTitle(){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const msg = new SpeechSynthesisUtterance('Oskars Wunsch Maschine');
+  msg.lang = 'de-DE';
+  msg.pitch = 0.3;
+  msg.rate = 0.85;
+  msg.volume = 1;
+  // männliche Stimme bevorzugen
+  const voices = window.speechSynthesis.getVoices();
+  const male = voices.find(v => v.lang.startsWith('de') && /male|man|männ|stefan|markus|yannick/i.test(v.name))
+            || voices.find(v => v.lang.startsWith('de') && !/female|frau|anna|petra|marlene|anna/i.test(v.name))
+            || voices.find(v => v.lang.startsWith('de'));
+  if(male) msg.voice = male;
+  window.speechSynthesis.speak(msg);
+}
+
+function openHelp(){ document.getElementById('help-overlay').style.display='block'; document.body.style.overflow='hidden'; }
+function closeHelp(){ document.getElementById('help-overlay').style.display='none'; document.body.style.overflow=''; }
+
+function toggleAcc(h3el){
+  h3el.closest('.menu-section').classList.toggle('open');
+}
+
+function openMenu(){
+  document.getElementById('menu-overlay').classList.add('open');
+  const state=getState();
+  const c=compute(state);
+  renderStats(state,c);
+  renderSettingsMenu(state);
+  renderVacationList(state);
+  renderSchoolWeeksInfo();
+  renderConvRate(state);
+  renderAbMenuStatus(state);
+}
+function closeMenu(){ document.getElementById('menu-overlay').classList.remove('open'); }
+
+function renderStats(state,c){
+  const grid=document.getElementById('stat-grid');
+  grid.innerHTML='';
+  const hist=state.history||[];
+  const now=new Date();
+  const nowM=now.toISOString().slice(0,7); // "2026-06"
+
+  // Filter by current month (using stored weekStart date)
+  const monthHist=hist.filter(h=>h.weekStart&&h.weekStart.slice(0,7)===nowM);
+  const monthScore=monthHist.reduce((n,h)=>n+(h.score||0),0)+(c.goalReached?c.score:c.score);
+  const monthGoal=monthHist.reduce((n,h)=>n+(h.goal||0),0)+c.weekGoal;
+  const monthSucc=monthHist.filter(h=>h.goalReached).length+(c.goalReached?1:0);
+  const monthBonus=monthHist.reduce((n,h)=>n+(h.bonus||0),0)+c.thisWeekBonus;
+  const monthSmileys=monthHist.reduce((n,h)=>n+(h.smileys||0),0)+c.thisWeekSmileys;
+
+  // Filter by current school year
+  const yearHist=hist.filter(h=>h.weekStart&&schoolYearOf(h.weekStart)===state.schoolYear);
+  const yearSucc=yearHist.filter(h=>h.goalReached).length+(c.goalReached?1:0);
+  const yearWeeks=yearHist.length+(1);
+  const yearBonus=yearHist.reduce((n,h)=>n+(h.bonus||0),0)+c.thisWeekBonus;
+  const yearSmileys=yearHist.reduce((n,h)=>n+(h.smileys||0),0)+c.thisWeekSmileys;
+  const totalJokersEver=c.totalJokers+(state.jokersSpent||0);
+
+  const MONTH_NAMES=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const monthName=MONTH_NAMES[now.getMonth()];
+
+  const S=(p,extra='')=>`<svg style="width:1em;height:1em;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round${extra}" viewBox="0 0 24 24">${p}</svg>`;
+  const ICO_CAL   = S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>');
+  const ICO_CHECK = S('<polyline points="20 6 9 17 4 12"/>');
+  const ICO_CLOCK = S('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
+  const ICO_STAR  = S('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>');
+  const ICO_SMILE = S('<circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/>');
+  const ICO_BOOK2 = S('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>');
+  const ICO_GIFT  = S('<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>');
+
+  // ── Leistungskurve ──────────────────────────────────────────────
+  const chartWrap = document.getElementById('stat-chart-wrap') || (() => {
+    const d = document.createElement('div');
+    d.id = 'stat-chart-wrap';
+    grid.parentNode.insertBefore(d, grid);
+    return d;
+  })();
+
+  if(!window._chartMode) window._chartMode = 'year';
+
+  function buildChart(mode){
+    const curWeek = {weekStart: state.weekStart, score: c.score, goal: c.weekGoal, goalReached: c.goalReached};
+    const baseWeeks = mode === 'year'
+      ? [...yearHist, curWeek]
+      : [...monthHist, ...(state.weekStart.slice(0,7) === nowM ? [curWeek] : [])];
+
+    const weeks = baseWeeks.filter(w => w.weekStart);
+    if(!weeks.length) return '<div style="font-size:.78em;color:#bbb;padding:10px 0;text-align:center">Noch keine Daten</div>';
+
+    const W = 260, H = 80, pad = 4;
+    const n = weeks.length;
+    const barW = Math.max(4, Math.min(16, Math.floor((W - pad*2) / n) - 2));
+    const gap  = n > 1 ? Math.floor((W - pad*2 - barW * n) / (n - 1)) : 0;
+
+    let labels = [], lastLabel = '';
+    weeks.forEach((w, i) => {
+      const key = mode === 'year' ? (w.weekStart||'').slice(5,7) : (w.weekStart||'').slice(8,10);
+      if(key && key !== lastLabel){
+        const MNAMES = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+        const lbl = mode === 'year' ? (MNAMES[+key]||'') : key+'.';
+        const x = pad + i * (barW + gap) + barW/2;
+        labels.push(`<text x="${x}" y="${H-1}" font-size="7" fill="#aaa" text-anchor="middle">${lbl}</text>`);
+        lastLabel = key;
+      }
+    });
+
+    const bars = weeks.map((w, i) => {
+      const x = pad + i * (barW + gap);
+      const ratio = Math.min((w.score||0) / (w.goal || 10), 1);
+      const bh = Math.max(2, Math.round(ratio * (H - 18)));
+      const y = H - 12 - bh;
+      const isCurrent = w.weekStart === state.weekStart;
+      const col = isCurrent ? '#7c6fcd' : w.goalReached ? '#43a047' : '#ef5350';
+      return `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="${col}" opacity="${isCurrent ? '0.7' : '1'}"/>`;
+    }).join('');
+
+    const goalLine = `<line x1="${pad}" y1="${H-12-(H-18)}" x2="${W-pad}" y2="${H-12-(H-18)}" stroke="#ddd" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+    const btnStyle = (active) => `font-size:.72em;font-weight:bold;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;` +
+      (active ? 'background:#5c6bc0;color:white' : 'background:#f0f0f0;color:#888');
+
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:.78em;font-weight:bold;color:#888">${ICO_CAL} Leistung</span>
+        <span style="display:flex;gap:4px">
+          <button style="${btnStyle(mode==='month')}" onclick="window._chartMode='month';renderStats(getState(),compute(getState()))">Monat</button>
+          <button style="${btnStyle(mode==='year')}"  onclick="window._chartMode='year';renderStats(getState(),compute(getState()))">Jahr</button>
+        </span>
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;overflow:visible">
+        ${goalLine}${bars}${labels.join('')}
+      </svg>
+      <div style="display:flex;gap:10px;font-size:.7em;color:#aaa;margin-top:4px">
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#43a047;margin-right:3px"></span>Erreicht</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#ef5350;margin-right:3px"></span>Nicht erreicht</span>
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#7c6fcd;margin-right:3px"></span>Diese Woche</span>
+      </div>`;
+  }
+
+  chartWrap.innerHTML = `<div style="margin-bottom:12px">${buildChart(window._chartMode)}</div>`;
+  // ────────────────────────────────────────────────────────────────
+
+  grid.innerHTML=`
+    <div style="grid-column:1/-1;font-size:.78em;font-weight:bold;color:#888;margin-bottom:4px">${ICO_CAL} Diese Woche</div>
+    <div class="stat-cell"><div class="sv">${c.score}/${c.weekGoal}</div><div class="sl">Punkte</div></div>
+    <div class="stat-cell"><div class="sv">${c.goalReached?ICO_CHECK:ICO_CLOCK}</div><div class="sl">Wochenziel</div></div>
+
+    <div style="grid-column:1/-1;font-size:.78em;font-weight:bold;color:#888;margin:8px 0 4px">${ICO_CAL} ${monthName} – Monatsübersicht</div>
+    <div class="stat-cell"><div class="sv">${monthSucc}</div><div class="sl">Ziele erreicht</div></div>
+    <div class="stat-cell"><div class="sv">${monthBonus}</div><div class="sl">${ICO_STAR} Bonuspunkte</div></div>
+    <div class="stat-cell"><div class="sv">${monthSmileys}</div><div class="sl">${ICO_SMILE} Smileys</div></div>
+    <div class="stat-cell"><div class="sv">${monthScore}/${monthGoal}</div><div class="sl">Punkte gesamt</div></div>
+
+    <div style="grid-column:1/-1;font-size:.78em;font-weight:bold;color:#888;margin:8px 0 4px">${ICO_BOOK2} Schuljahr ${state.schoolYear}</div>
+    <div class="stat-cell"><div class="sv">${yearSucc}/${yearWeeks}</div><div class="sl">Wochen ${ICO_CHECK}</div></div>
+    <div class="stat-cell"><div class="sv">${yearBonus}</div><div class="sl">${ICO_STAR} Bonus total</div></div>
+    <div class="stat-cell"><div class="sv">${yearSmileys}</div><div class="sl">${ICO_SMILE} Smileys total</div></div>
+    <div class="stat-cell"><div class="sv">${totalJokersEver}</div><div class="sl">${HEART_ICO} Joker verdient</div></div>
+    <div class="stat-cell"><div class="sv">${c.jokersAvail}</div><div class="sl">${HEART_ICO} Joker frei</div></div>
+    <div class="stat-cell"><div class="sv">${(state.fulfilledGoals||[]).length}</div><div class="sl">${ICO_GIFT} Wünsche erfüllt</div></div>
+  `;
+}
+
+function schoolYearOf(isoDate){
+  const d=new Date(isoDate);
+  const y=d.getFullYear(), m=d.getMonth()+1;
+  return m>=8 ? `${y}/${y+1}` : `${y-1}/${y}`;
+}
+
+function renderSettingsMenu(state){
+  document.getElementById('set-b-per-j').value=state.settings.bonusPerJoker||3;
+  document.getElementById('set-s-per-j').value=state.settings.smileyPerJoker||5;
+  document.getElementById('set-edit-pin').value=state.settings.editPin||'1234';
+  // Unlock-Status anzeigen
+  if(_editUnlocked){
+    document.getElementById('unlock-status').style.color='#9c27b0';
+    document.getElementById('unlock-status').innerHTML='<svg style="width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Sicherheit entsperrt';
+    document.getElementById('unlock-form').style.display='none';
+    document.getElementById('lock-btn-wrap').style.display='block';
+  } else {
+    document.getElementById('unlock-status').style.color='#e53935';
+    document.getElementById('unlock-status').innerHTML='<svg style="width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Sicherheit gesperrt';
+    document.getElementById('unlock-form').style.display='flex';
+    document.getElementById('lock-btn-wrap').style.display='none';
+  }
+}
+
+function renderSchoolWeeksInfo(){
+  const el=document.getElementById('school-weeks-info');
+  if(el.innerHTML) return; // cached
+  const years=['2025/2026','2026/2027','2027/2028'];
+  const maxWeeks=40; // Referenzwert für Balkenbreite
+  const maxDays=200;
+  let html='';
+  years.forEach(y=>{
+    const {schoolDays,schoolWeeks}=countSchoolWeeksInYear(y);
+    const wPct=Math.round(schoolWeeks/maxWeeks*100);
+    const dPct=Math.round(schoolDays/maxDays*100);
+    html+=`
+    <div style="margin-bottom:12px">
+      <div style="font-size:.78em;font-weight:bold;color:#555;margin-bottom:5px">${y}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:.7em;color:#888;width:62px;flex-shrink:0">Schulwochen</span>
+        <div style="flex:1;background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden">
+          <div style="width:${wPct}%;height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:6px"></div>
+        </div>
+        <span style="font-size:.72em;font-weight:bold;color:#5c6bc0;width:28px;text-align:right">~${schoolWeeks}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:.7em;color:#888;width:62px;flex-shrink:0">Schultage</span>
+        <div style="flex:1;background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden">
+          <div style="width:${dPct}%;height:100%;background:linear-gradient(90deg,#43a047,#66bb6a);border-radius:6px"></div>
+        </div>
+        <span style="font-size:.72em;font-weight:bold;color:#43a047;width:28px;text-align:right">~${schoolDays}</span>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function renderConvRate(state){
+  document.getElementById('conv-euros').value=state.eurToJoker.euros;
+  document.getElementById('conv-jokers-rate').value=state.eurToJoker.jokers;
+}
+
+function saveConvRate(){
+  const state=getState();
+  state.eurToJoker.euros=parseFloat(document.getElementById('conv-euros').value)||10;
+  state.eurToJoker.jokers=parseInt(document.getElementById('conv-jokers-rate').value)||5;
+  saveState(state);calcConv();
+}
+function calcConv(){
+  const state=getState();
+  const price=parseFloat(document.getElementById('conv-price').value);
+  const result=document.getElementById('conv-result');
+  if(!price||price<=0){result.textContent='–';return;}
+  result.textContent=Math.round(price/state.eurToJoker.euros*state.eurToJoker.jokers);
+}
+// ═══════════════════════════════════════════════════════
+// ABENTEUER-ZEIT
+// ═══════════════════════════════════════════════════════
+
+const AB_CATS = [
+  {emoji:'📚', label:'Gelesen'},
+  {emoji:'🏊', label:'Geschwommen'},
+  {emoji:'🌳', label:'Draußen'},
+  {emoji:'🛒', label:'Geholfen'},
+  {emoji:'🍳', label:'Gebacken'},
+  {emoji:'✍️', label:'Geschrieben'},
+  {emoji:'🎨', label:'Gebastelt'},
+  {emoji:'🏃', label:'Sport'},
+  {emoji:'🎲', label:'Gespielt'},
+  {emoji:'🌟', label:'Eigenes'},
+];
+
+function getAllVacations(){
+  const state = getState();
+  const fetched  = (state.settings && state.settings.fetchedVacations) || [];
+  const custom   = (state.settings && state.settings.customVacations)  || [];
+  const base     = fetched.length ? fetched : NRW_VACATIONS;
+  return [...base, ...custom].sort((a,b) => a.f.localeCompare(b.f));
+}
+
+function getCurrentVacation(){
+  const today = new Date().toISOString().slice(0,10);
+  return getAllVacations().find(v => today >= v.f && today <= v.t) || null;
+}
+
+function addCustomVacation(){
+  const n = (document.getElementById('vac-name').value||'').trim();
+  const f = document.getElementById('vac-from').value;
+  const t = document.getElementById('vac-to').value;
+  if(!n || !f || !t){ showToast('⚠️ Name und Datum eingeben'); return; }
+  if(f > t){ showToast('⚠️ Von muss vor Bis sein'); return; }
+  const state = getState();
+  if(!state.settings.customVacations) state.settings.customVacations = [];
+  state.settings.customVacations.push({n, f, t, custom: true});
+  saveState(state);
+  document.getElementById('vac-name').value = '';
+  document.getElementById('vac-from').value = '';
+  document.getElementById('vac-to').value = '';
+  renderVacationList(state);
+  showToast('✅ Ferien gespeichert');
+}
+
+function deleteCustomVacation(idx){
+  const state = getState();
+  state.settings.customVacations.splice(idx, 1);
+  saveState(state);
+  renderVacationList(state);
+  showToast('🗑 Ferien gelöscht');
+}
+
+function renderVacationList(state){
+  const el = document.getElementById('vacation-list');
+  if(!el) return;
+  const today = new Date().toISOString().slice(0,10);
+  const all = getAllVacations();
+  // Only show current + upcoming vacations
+  const currentYear = new Date().getFullYear().toString();
+  const relevant = all.filter(v => v.t >= today && v.f.startsWith(currentYear));
+  const custom = (state.settings && state.settings.customVacations) || [];
+  const fetched = (state.settings && state.settings.fetchedVacations) || [];
+  const fetchedAt = state.settings && state.settings.vacationsFetchedAt;
+  const sourceLabel = fetched.length
+    ? `● Online${fetchedAt ? ' · ' + fetchedAt.slice(5).replace('-','.') : ''}`
+    : '● Integrierte Daten';
+  const sourceColor = fetched.length ? '#43a047' : '#aaa';
+  const source = `<span style="font-size:.68em;color:${sourceColor}">${sourceLabel}</span>`;
+
+  let rows = relevant.map(v => {
+    const cIdx = custom.findIndex(c => c.f===v.f && c.t===v.t && c.n===v.n);
+    const isCurrent = today >= v.f && today <= v.t;
+    const del = cIdx >= 0
+      ? `<button onclick="deleteCustomVacation(${cIdx})" style="background:none;border:none;color:#ef5350;font-size:.9em;cursor:pointer;padding:0 0 0 4px">✕</button>`
+      : '';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.8em;padding:5px 0;border-bottom:1px solid #f5f5f5${isCurrent?';background:#fffde7':'' }">
+      <span style="font-weight:${isCurrent?'bold':'normal'};color:${cIdx>=0?'#5c6bc0':isCurrent?'#c86a00':'#444'}">${isCurrent?'▶ ':''}${v.n}</span>
+      <span style="color:#aaa;font-size:.9em;white-space:nowrap">${v.f.slice(5).replace('-','.')}–${v.t.slice(5).replace('-','.')}${del}</span>
+    </div>`;
+  }).join('');
+
+  if(!rows) rows = `<div style="font-size:.78em;color:#bbb;padding:6px 0">Keine kommenden Ferien gefunden</div>`;
+
+  el.innerHTML = `
+    <div style="margin-bottom:6px">${source}</div>
+    ${rows}`;
+}
+
+async function fetchVacations(silent=false){
+  const btn = document.getElementById('vac-fetch-btn');
+  if(btn){ btn.textContent = '…'; btn.disabled = true; }
+  const NAME_MAP = {
+    herbstferien:'Herbstferien', weihnachtsferien:'Weihnachtsferien',
+    osterferien:'Osterferien', pfingstferien:'Pfingstferien',
+    sommerferien:'Sommerferien', winterferien:'Winterferien',
+    fasching:'Faschingsferien', allerheiligen:'Allerheiligenferien'
+  };
+  const capitalize = s => s.replace(/\b\w/g, c => c.toUpperCase());
+  try {
+    const res = await fetch('https://ferien-api.de/api/v1/holidays/NW');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const fetched = data.map(v => {
+      const endDate = new Date(v.end);
+      endDate.setDate(endDate.getDate()-1);
+      // Name: erst NAME_MAP probieren, dann ersten Teil vor Leerzeichen/Zahl, dann capitalize
+      const baseName = (v.name||'').split(/[\s\d]/)[0].toLowerCase();
+      const mappedName = NAME_MAP[baseName] || capitalize(v.name||'');
+      return {
+        n: mappedName,
+        f: v.start.slice(0,10),
+        t: endDate.toISOString().slice(0,10)
+      };
+    }).sort((a,b)=>a.f.localeCompare(b.f));
+    const state = getState();
+    state.settings.fetchedVacations = fetched;
+    state.settings.vacationsFetchedAt = new Date().toISOString().slice(0,10);
+    saveState(state);
+    renderVacationList(state);
+    render(); // Countdown aktualisieren
+    if(!silent) showToast('✅ Ferien aktualisiert');
+  } catch(e) {
+    if(!silent) showToast('⚠️ Konnte nicht laden: '+e.message);
+    if(btn){ btn.textContent='↻ Aktualisieren'; btn.disabled=false; }
+  }
+}
+
+function autoFetchVacationsIfNeeded(){
+  const state = getState();
+  const lastFetch = state.settings.vacationsFetchedAt || '';
+  const today = new Date().toISOString().slice(0,10);
+  // Automatisch aktualisieren wenn noch nie geladen oder älter als 30 Tage
+  const daysSince = lastFetch
+    ? Math.round((new Date(today) - new Date(lastFetch)) / 86400000)
+    : 999;
+  if(daysSince >= 30) fetchVacations(true);
+}
+
+function isAbenteuerZeit(state){
+  if(_schoolPreview) return false;
+  if(_abPreview) return true;
+  if(state.abenteuer && state.abenteuer.manual) return true;
+  return getCurrentVacation() !== null;
+}
+
+function getVacationForMode(state){
+  if(state.abenteuer && state.abenteuer.manual) return null; // manually active, no specific vacation
+  return getCurrentVacation();
+}
+
+function formatDateDE(iso){
+  const d = new Date(iso);
+  return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear();
+}
+
+function previewBlocked(){
+  if(!_abPreview) return false;
+  const today = new Date().toISOString().slice(0,10);
+  const next = getAllVacations().find(v => v.f > today);
+  if(!next) return false;
+  const daysUntil = Math.round((new Date(next.f) - new Date()) / 86400000);
+  return daysUntil > 3;
+}
+
+function renderAbenteuerZeit(state){
+  const vac = getCurrentVacation();
+  const ab = state.abenteuer || {manual:false,ziele:[],log:[]};
+  const today = new Date().toISOString().slice(0,10);
+
+  // Header info
+  const cdWrap = document.getElementById('ab-ferien-countdown');
+
+  if(_abPreview && !vac){
+    // Preview-Modus: zeige Countdown bis nächste Ferien
+    const next = getAllVacations().find(v => v.f > today);
+    const daysUntil = next ? Math.round((new Date(next.f) - new Date()) / 86400000) : null;
+    const blocked = daysUntil !== null && daysUntil > 3;
+    document.getElementById('ab-ferien-name').textContent = next ? next.n : 'Keine Ferien geplant';
+    document.getElementById('ab-ferien-dates').textContent = next ? formatDateDE(next.f) + ' – ' + formatDateDE(next.t) : '';
+    cdWrap.style.display = next ? '' : 'none';
+    if(next){
+      const daysEl = document.getElementById('ab-days-left');
+      daysEl.textContent = daysUntil;
+      daysEl.style.animation = (!blocked && daysUntil <= 3) ? 'ab-blink 1s ease-in-out infinite' : 'none';
+      cdWrap.querySelector('div:first-child').textContent = blocked ? 'Noch' : '🎉 Nur noch';
+      cdWrap.querySelector('div:last-child').textContent = daysUntil === 1 ? 'Tag bis zu den Ferien!' : 'Tage bis zu den Ferien!';
+    }
+  } else if(vac){
+    document.getElementById('ab-ferien-name').textContent = vac.n;
+    document.getElementById('ab-ferien-dates').textContent = formatDateDE(vac.f) + ' – ' + formatDateDE(vac.t);
+    const daysLeft = Math.max(0, Math.round((new Date(vac.t) - new Date()) / 86400000));
+    cdWrap.style.display = '';
+    const daysEl = document.getElementById('ab-days-left');
+    daysEl.textContent = daysLeft === 0 ? '🎒' : daysLeft;
+    daysEl.style.animation = (daysLeft > 0 && daysLeft <= 3) ? 'ab-blink 1s ease-in-out infinite' : 'none';
+    if(daysLeft === 0) cdWrap.querySelector('div:last-child').textContent = 'Heute geht es wieder los!';
+    else if(daysLeft === 1) cdWrap.querySelector('div:last-child').textContent = 'Tag';
+    else cdWrap.querySelector('div:last-child').textContent = 'Tagen';
+  } else {
+    document.getElementById('ab-ferien-name').textContent = 'Abenteuer-Zeit';
+    document.getElementById('ab-ferien-dates').textContent = 'Manuell aktiviert';
+    cdWrap.style.display = 'none';
+  }
+
+  // Preview-Sperre: Overlay über Ziele + Log wenn > 3 Tage bis Ferien
+  const locked = previewBlocked();
+  ['ab-ziele-card','ab-log-card','ab-all-log-card'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.style.opacity = locked ? '0.35' : '';
+    el.style.pointerEvents = locked ? 'none' : '';
+  });
+  const lockBanner = document.getElementById('ab-preview-lock-banner');
+  if(lockBanner) lockBanner.style.display = locked ? '' : 'none';
+
+  // Log summary
+  const todayEntries = (ab.log||[]).filter(e => e.date === today);
+  const totalEntries = (ab.log||[]).length;
+  document.getElementById('ab-log-summary').textContent =
+    totalEntries === 0 ? 'Noch keine Abenteuer eingetragen – leg los!' :
+    `${totalEntries} Abenteuer erlebt!` + (todayEntries.length > 0 ? ` Heute: ${todayEntries.length} ✔` : '');
+
+  // Ziele
+  const zList = document.getElementById('ab-ziele-list');
+  zList.innerHTML = '';
+  (ab.ziele||[]).forEach((z,i) => {
+    const row = div('ab-ziel-row');
+    const chk = div('ab-ziel-check' + (z.done?' done':''));
+    chk.textContent = z.done ? '✔' : '';
+    chk.onclick = () => toggleAbenteuerZiel(i);
+    const txt = document.createElement('span');
+    txt.className = 'ab-ziel-text' + (z.done?' done':'');
+    txt.textContent = z.text;
+    const rm = document.createElement('span');
+    rm.className = 'ab-ziel-rm'; rm.textContent = '✕';
+    rm.onclick = () => removeAbenteuerZiel(i);
+    row.append(chk, txt, rm);
+    zList.appendChild(row);
+  });
+  if(!(ab.ziele||[]).length){
+    zList.innerHTML = '<div style="color:#ccc;font-size:.82em;text-align:center;padding:8px">Noch keine Ziele – schreib auf was du in den Ferien machen willst!</div>';
+  }
+
+  // Today label
+  const opts = {weekday:'long',day:'numeric',month:'long'};
+  document.getElementById('ab-today-label').textContent = new Date().toLocaleDateString('de-DE', opts);
+
+  // Textfeld leeren nach Render
+  const logInput = document.getElementById('ab-log-input');
+  if(logInput) logInput.value = '';
+
+  // Today's log
+  renderAbTodayLog(ab, today);
+
+  // All log grouped by date
+  const allLog = document.getElementById('ab-all-log');
+  allLog.innerHTML = '';
+  const byDate = {};
+  [...(ab.log||[])].reverse().forEach(e => {
+    if(!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+  const dates = Object.keys(byDate).sort().reverse();
+  if(!dates.length){
+    allLog.innerHTML = '<div style="color:#ccc;text-align:center;padding:12px">Hier erscheinen alle deine Abenteuer!</div>';
+  } else {
+    dates.forEach(d => {
+      const grp = div('ab-day-group');
+      const lbl = div('ab-day-date');
+      lbl.textContent = formatDateDE(d) + (d===today?' – Heute':'');
+      grp.appendChild(lbl);
+      byDate[d].forEach(e => {
+        const row = div('ab-log-entry');
+        row.innerHTML = `<span style="color:#555">${e.text||e.label||''}</span>`;
+        grp.appendChild(row);
+      });
+      allLog.appendChild(grp);
+    });
+  }
+}
+
+function renderAbTodayLog(ab, today){
+  const wrap = document.getElementById('ab-today-log');
+  wrap.innerHTML = '';
+  const todayEntries = (ab.log||[]).map((e,i)=>({...e,idx:i})).filter(e=>e.date===today);
+  if(!todayEntries.length){
+    wrap.innerHTML = '<div style="color:#ccc;font-size:.82em;text-align:center;padding:8px">Noch nichts eingetragen – leg los!</div>';
+    return;
+  }
+  todayEntries.reverse().forEach(e => {
+    const row = div('ab-log-entry');
+    row.innerHTML = `<span style="color:#555">${e.text||e.label||''}</span>`;
+    const rm = document.createElement('span');
+    rm.className = 'ab-rm'; rm.textContent = '✕';
+    rm.onclick = () => removeAbLog(e.idx);
+    row.appendChild(rm);
+    wrap.appendChild(row);
+  });
+}
+
+function addAbLogFree(){
+  if(previewBlocked()){showToast('🔒 Noch gesperrt – startet 3 Tage vor den Ferien');return;}
+  const inp = document.getElementById('ab-log-input');
+  const text = (inp.value||'').trim();
+  if(!text){showToast('⚠️ Was hast du gemacht?');return;}
+  const state = getState();
+  if(!state.abenteuer) state.abenteuer = {manual:false,ziele:[],log:[]};
+  state.abenteuer.log.push({date:new Date().toISOString().slice(0,10), text});
+  saveState(state);
+  inp.value = '';
+  const ab = state.abenteuer;
+  renderAbTodayLog(ab, new Date().toISOString().slice(0,10));
+  const total = ab.log.length;
+  const todayCount = ab.log.filter(e=>e.date===new Date().toISOString().slice(0,10)).length;
+  document.getElementById('ab-log-summary').textContent = `${total} Abenteuer erlebt! Heute: ${todayCount} ✔`;
+  showToast('✅ Eingetragen!');
+}
+
+function removeAbLog(idx){
+  const state = getState();
+  state.abenteuer.log.splice(idx,1);
+  saveState(state);
+  renderAbenteuerZeit(state);
+}
+
+function addAbenteuerZiel(){
+  if(previewBlocked()){showToast('🔒 Noch gesperrt – startet 3 Tage vor den Ferien');return;}
+  const inp = document.getElementById('ab-ziel-input');
+  const text = inp.value.trim();
+  if(!text){showToast('⚠️ Bitte ein Ziel eingeben!');return;}
+  const state = getState();
+  if(!state.abenteuer) state.abenteuer = {manual:false,ziele:[],log:[]};
+  state.abenteuer.ziele.push({text, done:false});
+  saveState(state);
+  inp.value = '';
+  renderAbenteuerZeit(state);
+}
+
+function toggleAbenteuerZiel(i){
+  if(previewBlocked()){showToast('🔒 Noch gesperrt – startet 3 Tage vor den Ferien');return;}
+  const state = getState();
+  state.abenteuer.ziele[i].done = !state.abenteuer.ziele[i].done;
+  saveState(state);
+  renderAbenteuerZeit(state);
+}
+
+function removeAbenteuerZiel(i){
+  const state = getState();
+  state.abenteuer.ziele.splice(i,1);
+  saveState(state);
+  renderAbenteuerZeit(state);
+}
+
+function toggleAbenteuerManual(){
+  _abPreview = !_abPreview;
+  if(_abPreview) _schoolPreview = false;
+  render();
+  closeMenu();
+  showToast(_abPreview ? '🌴 Vorschau Abenteuer-Zeit' : '📚 Vorschau beendet');
+}
+
+function toggleSchoolPreview(){
+  _schoolPreview = !_schoolPreview;
+  if(_schoolPreview) _abPreview = false;
+  render();
+  closeMenu();
+  showToast(_schoolPreview ? '📚 Vorschau Wunsch-Maschine' : '🌴 Vorschau beendet');
+}
+
+function endAbenteuerZeit(){
+  if(!confirm('Ferien vorbei? Dann geht es wieder los mit der Schule! 💪')) return;
+  const state = getState();
+  state.abenteuer.manual = false;
+  // Reset weekStart to current Monday so school week is fresh
+  state.weekStart = mondayISO();
+  state.days = Array(5).fill(null).map(()=>({mathe:false,deutsch:false,bonus:false,matheFilled:false,deutschFilled:false,smileys:[]}));
+  saveState(state); render();
+  showToast('📚 Neue Schulwoche – viel Erfolg, Oskar!');
+}
+
+function buildAbenteuerText(state, html){
+  const ab = state.abenteuer || {};
+  const log = ab.log || [];
+  const ziele = ab.ziele || [];
+  const byDate = {};
+  [...log].forEach(e => { if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+  const dates = Object.keys(byDate).sort().reverse();
+
+  if(html){
+    let s = `<h2 style="color:#c86a00;font-family:Arial,sans-serif">Oskars Abenteuer-Zeit</h2>`;
+    if(ziele.length){
+      s += `<h3 style="font-family:Arial,sans-serif;margin-top:20px">Meine Ferienziele</h3><ul style="font-family:Arial,sans-serif">`;
+      ziele.forEach(z => s += `<li style="text-decoration:${z.done?'line-through':'none'}">${z.text}${z.done?' ✔':''}</li>`);
+      s += '</ul>';
+    }
+    s += `<h3 style="font-family:Arial,sans-serif;margin-top:20px">Alle Abenteuer</h3>`;
+    if(!dates.length) s += '<p style="font-family:Arial,sans-serif;color:#aaa">Noch keine Einträge.</p>';
+    dates.forEach(d => {
+      s += `<p style="font-family:Arial,sans-serif;font-weight:bold;color:#c86a00;margin:14px 0 4px">${formatDateDE(d)}</p><ul style="font-family:Arial,sans-serif;margin:0">`;
+      byDate[d].forEach(e => s += `<li>${e.text||e.label||''}</li>`);
+      s += '</ul>';
+    });
+    return s;
+  } else {
+    let s = 'Oskars Abenteuer-Zeit\n';
+    s += '='.repeat(30) + '\n\n';
+    if(ziele.length){
+      s += 'Meine Ferienziele:\n';
+      ziele.forEach(z => s += `  ${z.done?'✔':'○'} ${z.text}\n`);
+      s += '\n';
+    }
+    s += 'Alle Abenteuer:\n\n';
+    if(!dates.length) s += '  Noch keine Einträge.\n';
+    dates.forEach(d => {
+      s += `${formatDateDE(d)}\n`;
+      byDate[d].forEach(e => s += `  • ${e.text||e.label||''}\n`);
+      s += '\n';
+    });
+    return s;
+  }
+}
+
+function printAbenteuer(){
+  const state = getState();
+  const html = buildAbenteuerText(state, true);
+  // Druckbereich erstellen
+  let area = document.getElementById('ab-print-area');
+  if(!area){ area = document.createElement('div'); area.id='ab-print-area'; document.body.appendChild(area); }
+  area.innerHTML = html;
+  window.print();
+}
+
+function emailAbenteuer(){
+  const state = getState();
+  const text = buildAbenteuerText(state, false);
+  const subject = encodeURIComponent('Oskars Abenteuer-Zeit – Mein Ferientagebuch');
+  const body = encodeURIComponent(text);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function renderAbMenuStatus(state){
+  const vac = getCurrentVacation();
+  const isActive = isAbenteuerZeit(state);
+  const status = document.getElementById('ab-menu-status');
+  const btn = document.getElementById('ab-menu-btn');
+  if(vac && !state.abenteuer?.manual){
+    status.textContent = `NRW-Ferien erkannt: ${vac.n} (${formatDateDE(vac.f)}–${formatDateDE(vac.t)})`;
+  } else if(state.abenteuer?.manual){
+    status.textContent = 'Manuell aktiviert';
+  } else {
+    status.textContent = 'Keine Ferien erkannt';
+  }
+  const GEAR = `<svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+  if(_abPreview){
+    btn.style.background = 'linear-gradient(135deg,#667eea,#764ba2)';
+    btn.style.color = 'white';
+    btn.innerHTML = `${GEAR} Maschine wechseln`;
+  } else {
+    btn.style.background = 'linear-gradient(135deg,#f6a821,#e07b00)';
+    btn.style.color = 'white';
+    btn.innerHTML = `${GEAR} Maschine wechseln`;
+  }
+
+  // Schul-Preview-Button: nur in echten Ferien anzeigen
+  const spBtn = document.getElementById('school-preview-btn');
+  if(spBtn){
+    const inRealVacation = !!getCurrentVacation();
+    spBtn.style.display = inRealVacation ? '' : 'none';
+    if(_schoolPreview){
+      spBtn.style.background = 'linear-gradient(135deg,#667eea,#764ba2)';
+      spBtn.style.color = 'white';
+      spBtn.innerHTML = `${GEAR} Zurück zur Abenteuer-Zeit`;
+    } else {
+      spBtn.style.background = '#f0f0f0';
+      spBtn.style.color = '#555';
+      spBtn.innerHTML = `${GEAR} Maschine wechseln`;
+    }
+  }
+}
+
+function saveSettings(){
+  const state=getState();
+  state.settings.bonusPerJoker=parseInt(document.getElementById('set-b-per-j').value)||3;
+  state.settings.smileyPerJoker=parseInt(document.getElementById('set-s-per-j').value)||5;
+  const pin=(document.getElementById('set-edit-pin').value||'').trim();
+  if(pin) state.settings.editPin=pin;
+  saveState(state);render();
+}
+
+function unlockEdit(){
+  const state=getState();
+  const input=(document.getElementById('unlock-pin-input').value||'').trim();
+  const correct=state.settings.editPin||'1234';
+  if(input===correct){
+    _editUnlocked=true;
+    document.getElementById('unlock-pin-input').value='';
+    document.getElementById('unlock-status').style.color='#9c27b0';
+    document.getElementById('unlock-status').innerHTML='<svg style="width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Sicherheit entsperrt';
+    document.getElementById('unlock-form').style.display='none';
+    document.getElementById('lock-btn-wrap').style.display='block';
+    showToast('🔓 Sicherheit entsperrt!');
+  } else {
+    document.getElementById('unlock-pin-input').value='';
+    document.getElementById('unlock-pin-input').style.borderColor='#e53935';
+    setTimeout(()=>document.getElementById('unlock-pin-input').style.borderColor='#ddd',1200);
+    showToast('❌ Falscher PIN!');
+  }
+}
+
+function lockEdit(){
+  _editUnlocked=false;
+  document.getElementById('unlock-status').style.color='#e53935';
+  document.getElementById('unlock-status').innerHTML='<svg style="width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Sicherheit gesperrt';
+  document.getElementById('unlock-form').style.display='flex';
+  document.getElementById('lock-btn-wrap').style.display='none';
+  showToast('🔒 Vergangene Tage wieder gesperrt!');
+}
+
+// Prüft ob ein Tag in der Vergangenheit liegt (ISO < heute) und gesperrt ist
+function isDayLocked(dayIdx){
+  if(_editUnlocked) return false;
+  const state=getState();
+  const wd=getWeekDates(state.weekStart)[dayIdx];
+  if(!wd) return false;
+  const today=new Date().toISOString().slice(0,10);
+  return wd.iso < today;
+}
+
+// ── Utils ─────────────────────────────────────────────
+function div(cls){ const e=document.createElement('div');if(cls)e.className=cls;return e; }
+function el(tag,cls){ const e=document.createElement(tag);if(cls)e.className=cls;return e; }
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function initSmiliesBg(){
+  const bg=document.createElement('div');
+  bg.id='smilies-bg';
+  bg.style.cssText='position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:-1;mix-blend-mode:multiply';
+
+  const C='hsla(265,45%,55%,0.5)';
+  function makeSmiley(size){
+    const el=document.createElement('div');
+    el.style.cssText=`position:absolute;left:0;top:0;width:${size}px;height:${size}px;will-change:transform`;
+    el.innerHTML=`<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="display:block">
+      <circle cx="12" cy="12" r="11" fill="none" stroke="${C}" stroke-width="1.2"/>
+      <path d="M8 13s1.5 2 4 2 4-2 4-2" fill="none" stroke="${C}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="9" r="1.3" fill="${C}"/>
+      <circle cx="15" cy="9" r="1.3" fill="${C}"/>
+    </svg>`;
+    return el;
+  }
+
+  const getW=()=>window.innerWidth, getH=()=>window.innerHeight;
+  const isMobile = window.innerWidth < 500;
+  const allSizes=[150,110,130, 90,160,100,120,105, 95,140, 80,115,155, 85,125, 70,145,108, 92,135, 35, 42, 38, 45, 32, 40];
+  const allHues =[250,200,280,220,260,190,240,270,255,210,275,235,245,215,265,195,285,205,250,230,260,250,270,240,255,265];
+  // Auf kleinen Geräten nur ~12 Smilies verwenden damit sie Platz haben
+  const keepIdx = isMobile ? [0,2,4,6,8,10,12,14,16,18,20,22] : allSizes.map((_,i)=>i);
+  const sizes = keepIdx.map(i=>allSizes[i]);
+  const hues  = keepIdx.map(i=>allHues[i]);
+
+  const balls=sizes.map((size,i)=>{
+    const el=makeSmiley(size);
+    bg.appendChild(el);
+    const w=getW(), h=getH();
+    const x=size+(w-2*size)*Math.random();
+    const y=size+(h-2*size)*Math.random();
+    const speed=28+Math.random()*38;
+    const ang=Math.random()*Math.PI*2;
+    return{
+      el,size,r:size/2,
+      x,y,
+      vx:Math.cos(ang)*speed,
+      vy:Math.sin(ang)*speed,
+      rot:Math.random()*360,
+      vr:(Math.random()<0.5?1:-1)*(50+Math.random()*60)
+    };
+  });
+
+  document.body.insertBefore(bg,document.body.firstChild);
+
+  let last=performance.now();
+
+  function tick(now){
+    const dt=Math.min((now-last)/1000,0.05);
+    last=now;
+    const w=getW(), h=getH();
+
+    for(const b of balls){
+      b.x+=b.vx*dt;
+      b.y+=b.vy*dt;
+      b.rot+=b.vr*dt;
+      if(b.x<0){b.x=0;b.vx=Math.abs(b.vx);b.vr=-b.vr;}
+      if(b.x+b.size>w){b.x=w-b.size;b.vx=-Math.abs(b.vx);b.vr=-b.vr;}
+      if(b.y<0){b.y=0;b.vy=Math.abs(b.vy);b.vr=-b.vr;}
+      if(b.y+b.size>h){b.y=h-b.size;b.vy=-Math.abs(b.vy);b.vr=-b.vr;}
+      b.el.style.transform=`translate(${b.x.toFixed(1)}px,${b.y.toFixed(1)}px) rotate(${b.rot.toFixed(1)}deg)`;
+    }
+
+    for(let i=0;i<balls.length;i++){
+      for(let j=i+1;j<balls.length;j++){
+        const a=balls[i],b=balls[j];
+        const ax=a.x+a.r,ay=a.y+a.r,bx=b.x+b.r,by=b.y+b.r;
+        const dx=bx-ax,dy=by-ay,dist2=dx*dx+dy*dy,minD=a.r+b.r;
+        if(dist2<minD*minD&&dist2>0.001){
+          const dist=Math.sqrt(dist2),nx=dx/dist,ny=dy/dist;
+          const ov=(minD-dist)*0.5;
+          a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+          const dvx=a.vx-b.vx,dvy=a.vy-b.vy,dot=dvx*nx+dvy*ny;
+          if(dot>0){
+            const ma=a.r*a.r,mb=b.r*b.r,mt=ma+mb,imp=2*dot/mt;
+            a.vx-=imp*mb*nx;a.vy-=imp*mb*ny;
+            b.vx+=imp*ma*nx;b.vy+=imp*ma*ny;
+            const tmp=a.vr;a.vr=-b.vr;b.vr=-tmp;
+          }
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initSmiliesBg();
+  document.getElementById('new-smiley-type').addEventListener('keydown',e=>{if(e.key==='Enter')addSmileyType();});
+  document.getElementById('goal-text').addEventListener('keydown',e=>{if(e.key==='Enter')addGoal();});
+
+  if (FIREBASE_CONFIGURED) {
+    // Online-Modus: Firebase initialisieren, render() kommt vom Listener
+    initFirebase();
+
+    // Online/Offline-Anzeige
+    const ind = document.getElementById('sync-indicator');
+    ind.style.display = 'block';
+    _db && _db.ref('.info/connected').on('value', snap => {
+      const on = snap.val();
+      ind.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${on?'#28a745':'#dc3545'};display:inline-block;flex-shrink:0;margin-right:6px"></span>${on ? 'Synchronisiert' : 'Offline'}`;
+      ind.style.background = 'rgba(0,0,0,.35)';
+      ind.style.color = 'white';
+    });
+  } else {
+    // Offline-Modus: localStorage, sofort rendern
+    document.getElementById('setup-banner').style.display = 'block';
+    document.getElementById('loading').style.display = 'none';
+    render();
+  }
+});
+</script>
+</body>
+</html>
