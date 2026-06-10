@@ -72,14 +72,22 @@
   90%,95%    {transform:scaleY(0.08)}
 }
 .smiley-eye{animation:blink 3.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-body{font-family:'Arial Rounded MT Bold',Arial,sans-serif;background:linear-gradient(135deg,#667eea,#4a2570,#764ba2,#3a4fa8,#667eea);background-size:400% 400%;min-height:100vh;padding:12px 12px 80px;color:#333;animation:breathe 8s ease-in-out infinite}
+body{font-family:'Arial Rounded MT Bold',Arial,sans-serif;background:linear-gradient(135deg,#667eea,#4a2570,#764ba2,#3a4fa8,#667eea);background-size:400% 400%;min-height:100vh;padding:12px 12px 80px;color:#333;animation:breathe 8s ease-in-out infinite;overflow-x:hidden}
 
 /* ── Header ── */
 .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.app-header h1{color:white;font-size:1.6em;text-shadow:2px 2px 4px rgba(0,0,0,.3);cursor:default;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.app-header h1{color:white;font-size:2.3em;text-shadow:none;cursor:default;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
 .app-header h1:hover{transform:scale(1.08)}
-.week-lbl{color:rgba(255,255,255,.8);font-size:.78em;text-align:center;margin-bottom:14px}
-.burger-btn{background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:8px 12px;font-size:1.3em;cursor:pointer;color:white}
+.week-lbl{color:rgba(255,255,255,.8);font-size:.78em;text-align:center;margin-bottom:14px;transition:all .3s ease}
+.burger-btn{position:fixed;top:12px;right:12px;z-index:900;background:rgba(58,26,110,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;border-radius:10px;padding:8px 12px;font-size:1.3em;cursor:pointer;color:white;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+@media(max-width:599px){
+  #app-title{font-size:27px;padding:0 50px;box-sizing:border-box;width:100%}
+}
+/* Sticky shrink header – alle Größen */
+#sticky-bar{display:none;position:fixed;top:0;left:0;right:0;z-index:800;height:65px;background:rgba(58,26,110,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:0 80px;box-shadow:0 2px 12px rgba(0,0,0,.3);justify-content:center;transition:background .4s ease}
+#sticky-bar.visible{display:flex;align-items:center}
+#sticky-bar-title{color:white;font-size:.95em;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Arial Rounded MT Bold',Arial,sans-serif}
+body.abenteuer-mode-active #sticky-bar{background:rgba(180,90,0,.88) !important}
 
 /* ── Cards ── */
 .card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
@@ -162,6 +170,8 @@ input[type=number]{-moz-appearance:textfield}
 .done-badge{font-size:.7em;color:#9c27b0;white-space:nowrap;flex-shrink:0}
 .g-rm{width:22px;height:22px;border-radius:50%;background:#667eea;color:white;font-size:.72em;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:bold;transition:background .2s}
 .g-rm:hover{background:#3a1a6e}
+.g-edit{width:22px;height:22px;border-radius:50%;background:#3a1a6e;color:white;font-size:.82em;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.g-edit:hover{background:#667eea}
 @keyframes puff-out{0%{filter:blur(0);opacity:1}100%{filter:blur(8px);opacity:0}}
 .puff-out{animation:puff-out .5s ease-out forwards}
 .add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
@@ -182,17 +192,24 @@ input[type=number]{-moz-appearance:textfield}
 .tag .rm{cursor:pointer;color:#aaa}
 
 /* ── Burger menu overlay ── */
-#menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:flex-start;justify-content:flex-end}
+#menu-overlay{position:fixed;inset:0;background:transparent;z-index:1000;display:none;align-items:flex-start;justify-content:flex-end}
 #menu-overlay.open{display:flex}
-#menu-panel{background:white;width:min(320px,90vw);height:100vh;padding:20px;overflow-y:auto;animation:slideIn .2s}
+#menu-panel{background:rgba(255,255,255,.55);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);width:100vw;height:100vh;padding:24px 20px;overflow-y:auto;animation:slideIn .25s cubic-bezier(.4,0,.2,1);color:#1a0550}
+#menu-panel label,#menu-panel p,#menu-panel small{color:#3a1a6e}
+#menu-panel input,#menu-panel select{background:rgba(255,255,255,.7);border:1px solid rgba(100,60,180,.3);color:#1a0550;border-radius:8px;padding:6px 10px}
+#menu-panel input::placeholder{color:rgba(80,40,140,.4)}
+#menu-panel input[type=range]{accent-color:#667eea}
+#menu-panel hr{border-color:rgba(100,60,180,.2)}
 @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
-.menu-close{background:none;border:none;font-size:1.4em;cursor:pointer;float:right;color:#888}
-.menu-section{margin-top:6px;border-radius:12px;overflow:hidden;border:1px solid #f0f0f0}
-.menu-section h3{font-size:.88em;color:#444;margin:0;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:8px;background:#fafafa}
-.menu-section h3:hover{background:#f3f3f3}
-.menu-section h3 .acc-arrow{font-size:.7em;color:#bbb;transition:transform .2s;margin-left:auto;flex-shrink:0}
+.menu-close{position:absolute;top:16px;right:16px;background:rgba(100,60,180,.15);border:none;font-size:.85em;cursor:pointer;color:#3a1a6e;border-radius:8px;padding:4px 9px;z-index:10;font-weight:bold}
+.menu-close:hover{background:rgba(100,60,180,.25)}
+#menu-panel{position:relative;padding-top:60px}
+.menu-section{margin-top:6px;border-radius:12px;overflow:hidden;border:1px solid rgba(100,60,180,.2)}
+.menu-section h3{font-size:.88em;color:#1a0550;margin:0;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:8px;background:rgba(255,255,255,.45)}
+.menu-section h3:hover{background:rgba(255,255,255,.6)}
+.menu-section h3 .acc-arrow{font-size:.7em;color:#9c7cd4;transition:transform .2s;margin-left:auto;flex-shrink:0}
 .menu-section.open h3 .acc-arrow{transform:rotate(180deg)}
-.menu-section .acc-body{display:none;padding:12px 14px 14px;border-top:1px solid #f0f0f0}
+.menu-section .acc-body{display:none;padding:12px 14px 14px;border-top:1px solid rgba(100,60,180,.15);background:rgba(255,255,255,.35)}
 .menu-section.open .acc-body{display:block}
 .conv-box{background:#f7f0ff;border-radius:10px;padding:12px}
 .conv-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#555;font-size:.82em;margin-bottom:8px}
@@ -244,8 +261,10 @@ input[type=number]{-moz-appearance:textfield}
 /* Vacation gradient override (set via JS) */
 body.abenteuer-mode-active .app-header{background:transparent !important;box-shadow:none !important}
 body.abenteuer-mode-active #app-title{color:#c86a00 !important;text-shadow:none !important}
-body.abenteuer-mode-active .burger-btn{background:rgba(200,106,0,.12) !important;color:#c86a00 !important}
+body.abenteuer-mode-active .burger-btn{background:rgba(200,106,0,.55) !important;color:#fff !important}
 body.abenteuer-mode-active #ab-header-badge{background:rgba(200,106,0,.12);color:#c86a00}
+body.abenteuer-mode-active #sticky-bar{background:rgba(200,106,0,.88) !important}
+body.abenteuer-mode-active #sticky-bar-title{color:#fff}
 body.abenteuer-mode-active .card h2{color:#c86a00 !important;animation:none !important}
 body.abenteuer-mode-active .card h2 svg{stroke:#c86a00 !important}
 body.abenteuer-mode-active .ab-day-date{color:#c86a00 !important}
@@ -285,7 +304,6 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
 <div id="menu-overlay" onclick="if(event.target===this)closeMenu()">
 <div id="menu-panel">
   <button class="menu-close" onclick="closeMenu()">✕</button>
-  <h2 style="font-size:1.1em;color:#5c6bc0;"><svg style="width:1em;height:1em;vertical-align:middle;stroke:#5c6bc0;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menü</h2>
 
   <div class="menu-section open">
     <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> Statistik<span class="acc-arrow">▼</span></h3>
@@ -596,12 +614,14 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
 <!-- ── Online-Indikator ── -->
 <div id="sync-indicator" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:white;border-radius:999px;padding:4px 12px;font-size:.72em;z-index:500;display:flex;align-items:center;gap:5px"></div>
 
+<!-- ── Burger (außerhalb jedes Containers für position:fixed) ── -->
+<button class="burger-btn" id="burger-btn" onclick="openMenu()">☰</button>
+<div id="sticky-bar"><span id="sticky-bar-title">Oskars Wunsch‑Maschine</span></div>
+
 <!-- ── App ── -->
 <div class="app-header" id="app-header" style="flex-direction:column;gap:6px">
-  <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-    <div style="width:40px"></div>
-    <h1 id="app-title" style="font-size:2.3em;text-align:center;flex:1;font-weight:900" onmouseenter="speakTitle()" ontouchstart="speakTitle()">Oskars Wunsch-Maschine</h1>
-    <button class="burger-btn" onclick="openMenu()">☰</button>
+  <div style="display:flex;align-items:center;justify-content:center;width:100%">
+    <h1 id="app-title" style="text-align:center;font-weight:900">Oskars Wunsch‑Maschine</h1>
   </div>
   <div id="ab-header-badge" style="display:none;background:rgba(255,255,255,.22);border-radius:20px;padding:4px 14px;font-size:.85em;font-weight:bold;letter-spacing:.5px">Abenteuer-Zeit</div>
 </div>
@@ -750,13 +770,13 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
       <p style="font-size:.85em;color:#444;line-height:1.6;margin-bottom:10px">Wünsche müssen <strong>nicht käuflich</strong> sein! Gemeinsam mit Oskar können Lehrkräfte auch schulische Erlebnisse als Ziele definieren — das macht die Wünsche persönlicher und pädagogisch wertvoller.</p>
       <p style="font-size:.82em;color:#666;font-weight:bold;margin-bottom:6px">Beispiele für nicht-käufliche Wünsche:</p>
       <ul style="font-size:.82em;color:#555;line-height:1.8;padding-left:18px;margin:0">
-        <li>🗳️ Teilnahme am Klassenrat</li>
-        <li>🎨 Eine Stunde freies Gestalten / Lieblingsaktivität in der Schule</li>
-        <li>🌱 Verantwortung übernehmen (z.B. Pflanzenpflege, Klassendienst wählen)</li>
-        <li>🎤 Etwas vor der Klasse vorstellen, das Oskar stolz macht</li>
-        <li>🍕 Gemeinsames Frühstück mit der Klasse oder einer Bezugsperson</li>
-        <li>📖 Vorlesestunde — Oskar darf ein Buch für die Klasse auswählen</li>
-        <li>🏆 Urkunde oder kleines Zertifikat für eine besondere Leistung</li>
+        <li>Teilnahme am Klassenrat</li>
+        <li>Eine Stunde freies Gestalten / Lieblingsaktivität in der Schule</li>
+        <li>Verantwortung übernehmen (z.B. Pflanzenpflege, Klassendienst wählen)</li>
+        <li>Etwas vor der Klasse vorstellen, das Oskar stolz macht</li>
+        <li>Gemeinsames Frühstück mit der Klasse oder einer Bezugsperson</li>
+        <li>Vorlesestunde — Oskar darf ein Buch für die Klasse auswählen</li>
+        <li>Urkunde oder kleines Zertifikat für eine besondere Leistung</li>
       </ul>
       <p style="font-size:.78em;color:#aaa;margin-top:12px;line-height:1.5">Tipp: Wünsche gemeinsam mit Oskar festlegen — das stärkt die Motivation und gibt ihm das Gefühl, selbst mitzugestalten.</p>
     </div>
@@ -1231,13 +1251,15 @@ function render(){
 
   if(abMode){
     document.body.classList.add('abenteuer-mode-active');
-    document.getElementById('app-title').textContent = 'Oskars Abenteuer-Maschine';
+    document.getElementById('app-title').textContent = 'Oskars Abenteuer‑Maschine';
+    document.getElementById('sticky-bar-title').textContent = 'Oskars Abenteuer‑Maschine';
     document.getElementById('vacation-countdown').style.display='none';
     renderAbenteuerZeit(state);
     if(window.updateSmiliesMoods) window.updateSmiliesMoods(100);
   } else {
     document.body.classList.remove('abenteuer-mode-active');
-    document.getElementById('app-title').textContent = 'Oskars Wunsch-Maschine';
+    document.getElementById('app-title').textContent = 'Oskars Wunsch‑Maschine';
+    document.getElementById('sticky-bar-title').textContent = 'Oskars Wunsch‑Maschine';
     document.getElementById('week-label').textContent='Woche '+weekLabel(state.weekStart)+' · '+state.schoolYear;
     // Countdown bis nächste Ferien
     const cdEl = document.getElementById('vacation-countdown');
@@ -1335,6 +1357,7 @@ function buildDayGrid(state,c){
 function renderScore(state,c){
   const el=document.getElementById('score-num');
   el.textContent=c.score;
+  el.dataset.target=c.score;
   el.className='score-num '+(c.goalReached?'goal-reached':'not-reached');
   document.getElementById('score-sub').textContent=`von ${c.weekGoal} Punkten (${c.schoolDays} Schultage)`;
   const pct=c.weekGoal>0?Math.min(c.score/c.weekGoal*100,100):0;
@@ -1475,8 +1498,9 @@ function renderGoals(state,c){
       btn.innerHTML=can?'Einlösen! 🎁':`${g.jokerCost} ${HEART_ICO}`;
       btn.disabled=!can;
       btn.onclick=()=>redeemGoal(i);
+      const ed=el('span','g-edit');ed.innerHTML='✎';ed.title='Bearbeiten';ed.onclick=()=>editGoal(i,row);
       const rm=el('span','g-rm');rm.textContent='✕';rm.onclick=()=>removeGoal(i,row);
-      row.append(emoji,info,btn,rm);
+      row.append(emoji,info,btn,ed,rm);
     }
     list.appendChild(row);
   });
@@ -1615,6 +1639,57 @@ function removeGoal(i,rowEl){
   } else {
     const state=getState();state.goals.splice(i,1);saveState(state);render();
   }
+}
+
+function editGoal(i,rowEl){
+  const state=getState();
+  const g=state.goals[i];
+  // Clear row and replace with inline edit form
+  rowEl.innerHTML='';
+  rowEl.style.flexWrap='wrap';
+  rowEl.style.gap='8px';
+  rowEl.style.padding='10px 12px';
+
+  const mkInp=(val,ph,w)=>{
+    const inp=document.createElement('input');
+    inp.type='text';inp.value=val||'';inp.placeholder=ph;
+    inp.style.cssText=`flex:${w||'1'};min-width:0;padding:6px 8px;border-radius:10px;border:1.5px solid #667eea;background:#1a0550;color:white;font-size:.82em;outline:none`;
+    return inp;
+  };
+  const inpEmoji=mkInp(g.emoji,'😊','0 0 40px');
+  const inpArt=mkInp(g.article,'Artikel','0 0 60px');
+  const inpName=mkInp(g.text,'Wunsch','2');
+  const inpCost=mkInp(g.jokerCost,'Joker','0 0 58px');
+  inpCost.type='number';inpCost.min='1';
+
+  const btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:6px;width:100%;justify-content:flex-end;margin-top:2px';
+
+  const saveBtn=el('button','redeem-btn');
+  saveBtn.style.cssText='font-size:.78em;padding:5px 14px;min-width:0;animation:none;background:#667eea';
+  saveBtn.textContent='✓ Speichern';
+  saveBtn.onclick=()=>{
+    const newEmoji=inpEmoji.value.trim()||g.emoji;
+    const newArt=inpArt.value.trim();
+    const newName=inpName.value.trim();
+    const newCost=parseInt(inpCost.value)||g.jokerCost;
+    if(!newName){showToast('⚠️ Bitte einen Namen eingeben');return;}
+    const s=getState();
+    s.goals[i]={...s.goals[i],emoji:newEmoji,article:newArt,text:newName,jokerCost:newCost};
+    saveState(s);render();
+    showToast('✅ Wunsch gespeichert!');
+  };
+  const cancelBtn=el('span','g-rm');
+  cancelBtn.style.cssText='background:#3a1a6e;font-size:.8em;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;flex-shrink:0';
+  cancelBtn.textContent='✕';
+  cancelBtn.onclick=()=>render();
+
+  const topRow=document.createElement('div');
+  topRow.style.cssText='display:flex;gap:6px;width:100%;align-items:center';
+  topRow.append(inpEmoji,inpArt,inpName,inpCost);
+  btnRow.append(cancelBtn,saveBtn);
+  rowEl.append(topRow,btnRow);
+  inpName.focus();
 }
 
 function redeemGoal(i){
@@ -2053,7 +2128,8 @@ function openSchatzkistea(){
 function speakTitle(){
   if(!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const msg = new SpeechSynthesisUtterance('Oskars Wunsch Maschine');
+  const isAb = document.body.classList.contains('abenteuer-mode-active');
+  const msg = new SpeechSynthesisUtterance(isAb ? 'Oskars Abenteuer Maschine' : 'Oskars Wunsch Maschine');
   msg.lang = 'de-DE';
   msg.pitch = 0.3;
   msg.rate = 0.85;
@@ -2975,6 +3051,57 @@ document.addEventListener('DOMContentLoaded',()=>{
   initSmiliesBg();
   document.getElementById('new-smiley-type').addEventListener('keydown',e=>{if(e.key==='Enter')addSmileyType();});
   document.getElementById('goal-text').addEventListener('keydown',e=>{if(e.key==='Enter')addGoal();});
+
+  // Sticky shrink bar – alle Bildschirmgrößen
+  const stickyBar=document.getElementById('sticky-bar');
+  const appHeader=document.getElementById('app-header');
+  if(stickyBar&&appHeader){
+    window.addEventListener('scroll',()=>{
+      const headerBottom=appHeader.getBoundingClientRect().bottom;
+      if(headerBottom<0){stickyBar.classList.add('visible');}
+      else{stickyBar.classList.remove('visible');}
+    },{passive:true});
+  }
+
+  // ── Tacho entrance animation ──────────────────────────
+  (()=>{
+    let tachoAnimated=false;
+    const svg=document.getElementById('tacho-svg');
+    if(!svg) return;
+    const obs=new IntersectionObserver(entries=>{
+      if(tachoAnimated||!entries[0].isIntersecting) return;
+      tachoAnimated=true;
+      const needleG=document.getElementById('tacho-needle-g');
+      const arc=document.getElementById('tacho-arc');
+      const scoreEl=document.getElementById('score-num');
+      if(!needleG||!arc) return;
+      const targetAngle=parseFloat(needleG.getAttribute('transform').match(/-?\d+(\.\d+)?/)[0]);
+      const dashArr=arc.getAttribute('stroke-dasharray').split(' ');
+      const targetFilled=parseFloat(dashArr[0]);
+      const targetScore=parseInt(scoreEl?.dataset.target||scoreEl?.textContent||0);
+      const arcLen=267;
+      const startAngle=-90;
+      const duration=1000;
+      const ease=t=>t<0.5?2*t*t:1-(Math.pow(-2*t+2,2)/2);
+      const start=performance.now();
+      needleG.setAttribute('transform',`rotate(${startAngle},100,100)`);
+      arc.setAttribute('stroke-dasharray',`0 ${arcLen}`);
+      if(scoreEl) scoreEl.textContent='0';
+      function step(now){
+        const p=Math.min((now-start)/duration,1);
+        const e=ease(p);
+        const ang=startAngle+(targetAngle-startAngle)*e;
+        const fill=targetFilled*e;
+        needleG.setAttribute('transform',`rotate(${ang},100,100)`);
+        arc.setAttribute('stroke-dasharray',`${fill} ${arcLen-fill}`);
+        if(scoreEl) scoreEl.textContent=Math.round(targetScore*e);
+        if(p<1) requestAnimationFrame(step);
+        else{ if(scoreEl) scoreEl.textContent=targetScore; tachoAnimated=false; }
+      }
+      requestAnimationFrame(step);
+    },{threshold:0.3});
+    obs.observe(svg);
+  })();
 
   if (FIREBASE_CONFIGURED) {
     // Online-Modus: Firebase initialisieren, render() kommt vom Listener
