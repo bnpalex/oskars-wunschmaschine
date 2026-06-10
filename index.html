@@ -911,10 +911,10 @@ function getDayInfo(iso) {
 
 function getWeekDates(mondayISO) {
   const days = [];
+  const [y,m,day] = mondayISO.split('-').map(Number);
   for(let i=0;i<5;i++){
-    const d = new Date(mondayISO);
-    d.setDate(d.getDate()+i);
-    const iso = d.toISOString().slice(0,10);
+    const d = new Date(y, m-1, day+i);
+    const iso = localISO(d);
     const info = getDayInfo(iso);
     days.push({iso, info, dayNum:i});
   }
@@ -1092,11 +1092,14 @@ function defaultState(){
   };
 }
 
+function localISO(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 function mondayISO(){
   const d=new Date();
   const diff=d.getDay()===0?-6:1-d.getDay();
   d.setDate(d.getDate()+diff);
-  return d.toISOString().slice(0,10);
+  return localISO(d);
 }
 function weekLabel(iso){
   const d=new Date(iso),fri=new Date(d);
@@ -2747,7 +2750,7 @@ function isDayLocked(dayIdx){
   const state=getState();
   const wd=getWeekDates(state.weekStart)[dayIdx];
   if(!wd) return false;
-  const today=new Date().toISOString().slice(0,10);
+  const today=localISO(new Date());
   return wd.iso < today;
 }
 
