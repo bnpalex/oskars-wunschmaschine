@@ -397,7 +397,9 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
       <div style="display:flex;gap:8px;align-items:center">
         <input type="text" id="ntfy-topic-input" placeholder="z.B. oskar-benachrichtigung-xyz" style="flex:1;border:2px solid #ddd;border-radius:8px;padding:7px 10px;font-size:.85em;outline:none" oninput="saveNtfyTopic()"/>
       </div>
-      <p style="font-size:.72em;color:#888;margin:6px 0 0">Topic selbst wählen — je ungewöhnlicher desto besser. App: <strong>ntfy.sh</strong></p>
+      <button onclick="testNtfy()" style="margin-top:8px;width:100%;background:#667eea;color:white;border:none;border-radius:8px;padding:7px;font-size:.82em;font-weight:bold;cursor:pointer">🔔 Testnachricht senden</button>
+      <p id="ntfy-status" style="font-size:.72em;margin:4px 0 0;color:#888"></p>
+      <p style="font-size:.72em;color:#888;margin:4px 0 0">Topic selbst wählen — je ungewöhnlicher desto besser. App: <strong>ntfy.sh</strong></p>
     </div>
   </div>
 
@@ -2904,6 +2906,20 @@ function sendNtfy(message){
     body:message,
     headers:{'Title':'Oskars Wunsch-Maschine','Priority':'default','Tags':'pencil'}
   }).catch(()=>{});
+}
+function testNtfy(){
+  const topic=loadNtfyTopic();
+  const status=document.getElementById('ntfy-status');
+  if(!topic){status.textContent='⚠️ Kein Topic eingetragen!';status.style.color='#e53935';return;}
+  status.textContent='⏳ Sende…';status.style.color='#888';
+  fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`,{
+    method:'POST',
+    body:'🔔 Test erfolgreich! Benachrichtigungen funktionieren.',
+    headers:{'Title':'Oskars Wunsch-Maschine','Priority':'default','Tags':'white_check_mark'}
+  }).then(r=>{
+    if(r.ok){status.textContent='✅ Nachricht gesendet!';status.style.color='#388e3c';}
+    else{status.textContent='❌ Fehler: '+r.status;status.style.color='#e53935';}
+  }).catch(e=>{status.textContent='❌ Netzwerkfehler';status.style.color='#e53935';});
 }
 
 function unlockEdit(){
