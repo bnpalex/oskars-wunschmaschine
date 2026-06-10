@@ -103,7 +103,7 @@ input[type=number]{-moz-appearance:textfield}
   #tacho-svg{width:300px !important;height:165px !important}
 }
 .score-sub{font-size:.8em;color:#667eea;margin-top:2px;animation:breathe-color 8s ease-in-out infinite}
-.prog-lbl{font-size:.9em;font-weight:bold;color:#667eea;text-align:right;animation:breathe-color 8s ease-in-out infinite}
+.prog-lbl{font-size:.9em;font-weight:bold;color:#667eea;text-align:center;animation:breathe-color 8s ease-in-out infinite}
 
 /* ── Day Grid ── */
 .day-grid{display:grid;grid-template-columns:72px repeat(5,1fr);gap:4px;align-items:center}
@@ -153,14 +153,17 @@ input[type=number]{-moz-appearance:textfield}
 .g-info{flex:1;min-width:0}
 .g-name{font-size:.88em;font-weight:bold}
 .g-name.done{text-decoration:line-through;color:#aaa}
-.g-sub{font-size:.7em;color:#aaa;margin-top:1px}
+.g-sub{font-size:.7em;color:#3a1a6e;margin-top:1px;font-weight:bold}
 .g-prog{background:#eef0ff;border-radius:999px;height:6px;margin-top:4px;overflow:hidden}
 .g-prog-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .4s}
 .g-prog-bar.can{background:linear-gradient(90deg,#764ba2,#667eea)}
 .redeem-btn{background:linear-gradient(135deg,#f093fb,#f5576c);color:white;border:none;border-radius:20px;padding:6px 12px;font-size:.75em;cursor:pointer;font-weight:bold;white-space:nowrap;flex-shrink:0}
 .redeem-btn:disabled{background:#ddd;cursor:default}
 .done-badge{font-size:.7em;color:#9c27b0;white-space:nowrap;flex-shrink:0}
-.g-rm{font-size:.72em;color:#ddd;cursor:pointer;flex-shrink:0}
+.g-rm{width:22px;height:22px;border-radius:50%;background:#667eea;color:white;font-size:.72em;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:bold;transition:background .2s}
+.g-rm:hover{background:#3a1a6e}
+@keyframes puff-out{0%{filter:blur(0);opacity:1}100%{filter:blur(8px);opacity:0}}
+.puff-out{animation:puff-out .5s ease-out forwards}
 .add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .add-row input,.add-row select{border:2px solid #ddd;border-radius:8px;padding:6px 10px;font-size:.82em;outline:none}
 .add-row input:focus,.add-row select:focus{border-color:#5c6bc0}
@@ -292,7 +295,7 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
   </div>
 
   <div class="menu-section">
-    <h3 onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5a4 4 0 1 0 0 7"/><line x1="8" y1="11" x2="15" y2="11"/><line x1="8" y1="14" x2="14" y2="14"/></svg> Umrechner<span class="acc-arrow">▼</span></h3>
+    <h3 id="acc-umrechner" onclick="toggleAcc(this)"><svg style="width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5a4 4 0 1 0 0 7"/><line x1="8" y1="11" x2="15" y2="11"/><line x1="8" y1="14" x2="14" y2="14"/></svg> Umrechner<span class="acc-arrow">▼</span></h3>
     <div class="acc-body">
       <div class="conv-box">
         <div class="conv-row">
@@ -308,6 +311,9 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
           <span>€ =</span>
           <span class="conv-result" id="conv-result">–</span>
           <span><svg class="hi" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Joker</span>
+        </div>
+        <div id="conv-adopt-wrap" style="display:none;margin-top:8px;display:none;justify-content:center">
+          <button id="conv-adopt-btn" onclick="adoptConvResult()" style="background:#667eea;color:white;border:none;border-radius:12px;padding:7px 18px;font-size:.82em;font-weight:bold;cursor:pointer">↩ Als Jokerwert für neuen Wunsch übernehmen</button>
         </div>
       </div>
       <p style="font-size:.75em;color:#aaa;text-align:center;margin-top:10px;line-height:1.5">Zwischen Euro und Joker gibt es keine feste Regel — der Kurs ist immer Gefühlssache und kann jederzeit angepasst werden.</p>
@@ -732,7 +738,29 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
 <!-- Joker-Maschine -->
 <div class="card">
   <h2 style="font-size:1.2em"><svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> Oskars Wünsche</h2>
-  <p style="font-size:.75em;color:#aaa;margin-bottom:10px;text-align:center;">Sammle Joker und tausche sie gegen Wünsche ein!</p>
+  <p style="font-size:.75em;color:#aaa;margin-bottom:6px;text-align:center;">Sammle Joker und tausche sie gegen Wünsche ein!</p>
+  <button onclick="document.getElementById('wunsch-info-popup').style.display='flex'" style="background:#9c27b0;border:none;border-radius:20px;padding:4px 12px;font-size:.75em;cursor:pointer;color:white;font-weight:bold;margin:0 auto 12px;display:block">Kurzanleitung für Lehrkräfte</button>
+
+  <div id="wunsch-info-popup" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:center;justify-content:center;padding:20px">
+    <div style="background:white;border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:80vh;overflow-y:auto;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <strong style="font-size:1em;color:#3a1a6e">Kurzanleitung für Lehrkräfte</strong>
+        <button onclick="document.getElementById('wunsch-info-popup').style.display='none'" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.85em">✕</button>
+      </div>
+      <p style="font-size:.85em;color:#444;line-height:1.6;margin-bottom:10px">Wünsche müssen <strong>nicht käuflich</strong> sein! Gemeinsam mit Oskar können Lehrkräfte auch schulische Erlebnisse als Ziele definieren — das macht die Wünsche persönlicher und pädagogisch wertvoller.</p>
+      <p style="font-size:.82em;color:#666;font-weight:bold;margin-bottom:6px">Beispiele für nicht-käufliche Wünsche:</p>
+      <ul style="font-size:.82em;color:#555;line-height:1.8;padding-left:18px;margin:0">
+        <li>🗳️ Teilnahme am Klassenrat</li>
+        <li>🎨 Eine Stunde freies Gestalten / Lieblingsaktivität in der Schule</li>
+        <li>🌱 Verantwortung übernehmen (z.B. Pflanzenpflege, Klassendienst wählen)</li>
+        <li>🎤 Etwas vor der Klasse vorstellen, das Oskar stolz macht</li>
+        <li>🍕 Gemeinsames Frühstück mit der Klasse oder einer Bezugsperson</li>
+        <li>📖 Vorlesestunde — Oskar darf ein Buch für die Klasse auswählen</li>
+        <li>🏆 Urkunde oder kleines Zertifikat für eine besondere Leistung</li>
+      </ul>
+      <p style="font-size:.78em;color:#aaa;margin-top:12px;line-height:1.5">Tipp: Wünsche gemeinsam mit Oskar festlegen — das stärkt die Motivation und gibt ihm das Gefühl, selbst mitzugestalten.</p>
+    </div>
+  </div>
   <div id="goal-list"></div>
   <div class="add-row">
     <div style="position:relative;display:inline-flex;align-items:center;flex-shrink:0">
@@ -768,12 +796,15 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
     <input type="text" id="goal-text" placeholder="Wunsch..." style="flex:1;min-width:90px"/>
     <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
       <div style="display:flex;flex-direction:column;gap:2px">
-        <button type="button" onclick="const i=document.getElementById('goal-cost');i.value=(+i.value||0)+1" style="width:30px;height:22px;border:2px solid #667eea;border-radius:6px;background:#eef0ff;color:#667eea;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
-        <button type="button" onclick="const i=document.getElementById('goal-cost');i.value=Math.max(1,(+i.value||1)-1)" style="width:30px;height:22px;border:2px solid #667eea;border-radius:6px;background:#eef0ff;color:#667eea;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+        <button type="button" onclick="const i=document.getElementById('goal-cost');i.value=(+i.value||0)+1;document.getElementById('goal-cost-hint').style.display='none'" style="width:30px;height:22px;border:2px solid #667eea;border-radius:6px;background:#eef0ff;color:#667eea;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
+        <button type="button" onclick="const i=document.getElementById('goal-cost');i.value=Math.max(1,(+i.value||1)-1);document.getElementById('goal-cost-hint').style.display='none'" style="width:30px;height:22px;border:2px solid #667eea;border-radius:6px;background:#eef0ff;color:#667eea;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
       </div>
-      <input type="number" id="goal-cost" value="3" min="1" style="width:38px;text-align:center;border:2px solid #ddd;border-radius:8px;padding:4px 0;font-size:.9em;-moz-appearance:textfield"/>
+      <input type="number" id="goal-cost" value="3" min="1" style="width:38px;text-align:center;border:2px solid #ddd;border-radius:8px;padding:4px 0;font-size:.9em;-moz-appearance:textfield" oninput="document.getElementById('goal-cost-hint').style.display=(!this.value||+this.value<1)?'block':'none'" onchange="document.getElementById('goal-cost-hint').style.display=(!this.value||+this.value<1)?'block':'none'"/>
     </div>
     <button onclick="addGoal()">+</button>
+  </div>
+  <div id="goal-cost-hint" style="display:none;font-size:.72em;color:#9c27b0;margin-top:6px;padding:6px 10px;background:#f3e5f5;border-radius:8px;line-height:1.5">
+    💡 Bitte einen Jokerwert eintragen. Tipp: Den passenden Wert kannst du mit dem <a href="#" onclick="openMenu();const h=document.getElementById('acc-umrechner');if(h){h.closest('.menu-section').classList.add('open');setTimeout(()=>h.scrollIntoView({behavior:'smooth'}),150);}return false;" style="color:#6a1b9a;font-weight:bold;text-decoration:underline">Umrechner im Menü</a> berechnen.
   </div>
 </div>
 
@@ -1203,6 +1234,7 @@ function render(){
     document.getElementById('app-title').textContent = 'Oskars Abenteuer-Maschine';
     document.getElementById('vacation-countdown').style.display='none';
     renderAbenteuerZeit(state);
+    if(window.updateSmiliesMoods) window.updateSmiliesMoods(100);
   } else {
     document.body.classList.remove('abenteuer-mode-active');
     document.getElementById('app-title').textContent = 'Oskars Wunsch-Maschine';
@@ -1371,7 +1403,27 @@ function renderScore(state,c){
       const preview=!filled&&weekContrib>0&&i<bankTotal;
       dot.className='bdot';
       if(filled||preview){
-        dot.style.cssText='border:none;background-color:#3a1a6e;animation:breathe-color-bg 8s ease-in-out infinite';
+        dot.style.cssText='border:none;background-color:#3a1a6e;animation:breathe-color-bg 8s ease-in-out infinite;display:flex;align-items:center;justify-content:center';
+        const W='rgba(255,255,255,0.9)';
+        const E=`fill="${W}" stroke="none"`;
+        const faces=[
+          `<path d="M7 15s2 2.5 5 2.5 5-2.5 5-2.5"/><circle cx="8.5" cy="10" r="1" ${E}/><circle cx="15.5" cy="10" r="1" ${E}/>`, // Lächeln
+          `<line x1="8" y1="14" x2="16" y2="14"/><circle cx="8.5" cy="9" r="1" ${E}/><circle cx="15.5" cy="9" r="1" ${E}/>`, // Strich
+          `<path d="M7 15s2-2 5-2 5 2 5 2"/><circle cx="8.5" cy="9" r="1" ${E}/><circle cx="15.5" cy="9" r="1" ${E}/>`, // Schmollmund
+          `<line x1="8" y1="13" x2="14" y2="15.5"/><circle cx="8.5" cy="9" r="1" ${E}/><circle cx="15.5" cy="9" r="1" ${E}/>`, // Smirk links
+          `<line x1="10" y1="15.5" x2="16" y2="13"/><circle cx="8.5" cy="9" r="1" ${E}/><circle cx="15.5" cy="9" r="1" ${E}/>`, // Smirk rechts
+          `<path d="M7 13s2 2.5 5 2.5 5-2.5 5-2.5"/><circle cx="7.5" cy="8" r="1" ${E}/><circle cx="12" cy="7.5" r="1" ${E}/><circle cx="16.5" cy="8" r="1" ${E}/>`, // Drei Augen
+          `<path d="M7 15s2 2.5 5 2.5 5-2.5 5-2.5"/><circle cx="8.5" cy="10" r="1" ${E}/><line x1="13.5" y1="9.5" x2="17" y2="9.5"/>`, // Zwinkern
+          `<path d="M7 15s2 2.5 5 2.5 5-2.5 5-2.5"/><text x="7" y="11" font-size="4" fill="${W}" stroke="none">★</text><text x="14" y="11" font-size="4" fill="${W}" stroke="none">★</text>`, // Sterne-Augen
+          `<path d="M9 15s1 1.5 3 1.5 3-1.5 3-1.5"/><circle cx="8.5" cy="10" r="1" ${E}/><circle cx="15.5" cy="10" r="1" ${E}/>`, // Kleines Lächeln
+          `<path d="M10 15.5 Q12 13.5 14 15.5" fill="none"/><circle cx="8.5" cy="9" r="1" ${E}/><circle cx="15.5" cy="9" r="1" ${E}/>`, // Küsschen
+          `<ellipse cx="12" cy="15.5" rx="2.5" ry="2" stroke="${W}" fill="none"/><circle cx="8.5" cy="9" r="1" ${E}/><circle cx="15.5" cy="9" r="1" ${E}/>`, // O-Mund
+          `<path d="M7 15s2 1.5 5 1.5 5-1.5 5-1.5"/><line x1="7" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="17" y2="10"/><text x="17" y="8" font-size="3.5" fill="${W}" stroke="none">z</text><text x="18.5" y="6" font-size="3" fill="${W}" stroke="none">z</text>`, // Schlaf
+          `<path d="M7 15s2 2.5 5 2.5 5-2.5 5-2.5"/><rect x="6.5" y="8.5" width="4" height="3" rx="1.5" stroke="${W}" fill="rgba(255,255,255,0.2)"/><rect x="13.5" y="8.5" width="4" height="3" rx="1.5" stroke="${W}" fill="rgba(255,255,255,0.2)"/><line x1="10.5" y1="10" x2="13.5" y2="10"/>`, // Cool Brille
+          `<line x1="7" y1="8" x2="10" y2="11"/><line x1="10" y1="8" x2="7" y2="11"/><line x1="14" y1="8" x2="17" y2="11"/><line x1="17" y1="8" x2="14" y2="11"/><path d="M8 16 Q12 13.5 16 16"/>`, // Tot
+        ];
+        const face=Math.random()<0.8 ? faces[0] : faces[1+Math.floor(Math.random()*(faces.length-1))];
+        dot.innerHTML=`<svg viewBox="0 0 24 24" width="80%" height="80%" style="display:block" fill="none" stroke="${W}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">${face}</svg>`;
       }
       dotsContainer.appendChild(dot);
     }
@@ -1423,7 +1475,7 @@ function renderGoals(state,c){
       btn.innerHTML=can?'Einlösen! 🎁':`${g.jokerCost} ${HEART_ICO}`;
       btn.disabled=!can;
       btn.onclick=()=>redeemGoal(i);
-      const rm=el('span','g-rm');rm.textContent='✕';rm.onclick=()=>removeGoal(i);
+      const rm=el('span','g-rm');rm.textContent='✕';rm.onclick=()=>removeGoal(i,row);
       row.append(emoji,info,btn,rm);
     }
     list.appendChild(row);
@@ -1480,11 +1532,12 @@ function toggleBonus(dayIdx){
   const state=getState();
   const day=state.days[dayIdx];
   if(!day.mathe||!day.deutsch){showToast('⚠️ Erst Mathe + Deutsch erledigen!');return;}
+  const cBefore=compute(state);
   day.bonus=!day.bonus;
   saveState(state);
   const c=compute(state);render();
   if(day.bonus){
-    if(c.bonusRem===0) showToast('🎉 Joker verdient! Jetzt '+c.totalJokers+' 🃏');
+    if(c.bonusJokers>cBefore.bonusJokers) setTimeout(()=>showCelebration('bonus'),300);
     else showToast(`⭐ Bonuspunkt! Noch ${c.bpj-c.bonusRem} bis zum nächsten Joker`);
   }
 }
@@ -1515,10 +1568,9 @@ function addSmiley(dayIdx,type){
   state.allSmileys.push({date:new Date().toISOString().slice(0,10),type});
   const c=compute(state);
   saveState(state);render();
-  showToast('😊 Super Leistung, Oskar!');
-  // Check if new smiley joker earned
   const c2=compute(state);
-  if(c2.smileyRem===0&&c2.smileyJokers>c.smileyJokers) showToast('🎉 Smiley-Joker verdient! Insgesamt '+c2.totalJokers+' 🃏');
+  if(c2.smileyJokers>c.smileyJokers) setTimeout(()=>showCelebration('smiley'),300);
+  else showToast('😊 Super Leistung, Oskar!');
 }
 
 function removeSmiley(dayIdx,si){
@@ -1555,8 +1607,14 @@ function addGoal(){
   showToast('✅ Wunsch hinzugefügt!');
 }
 
-function removeGoal(i){
-  const state=getState();state.goals.splice(i,1);saveState(state);render();
+function removeGoal(i,rowEl){
+  if(!confirm('Diesen Wunsch wirklich löschen? 🗑️')) return;
+  if(rowEl){
+    rowEl.classList.add('puff-out');
+    setTimeout(()=>{const state=getState();state.goals.splice(i,1);saveState(state);render();},500);
+  } else {
+    const state=getState();state.goals.splice(i,1);saveState(state);render();
+  }
 }
 
 function redeemGoal(i){
@@ -1584,7 +1642,12 @@ function showCelebration(reason){
   const isTiny=window.innerWidth<360;
   msg.innerHTML=`
     <div style="font-size:${isTiny?'1.9em':isSmall?'2.2em':'5.2em'};font-weight:bold;margin-bottom:14px;font-family:'Arial Rounded MT Bold',Arial,sans-serif;line-height:1.2;word-break:break-word">Super gemacht!</div>
-    <div style="font-size:${isTiny?'1.05em':isSmall?'1.2em':'2.4em'};line-height:1.6;font-family:'Arial Rounded MT Bold',Arial,sans-serif">${reason==='bank' ? 'Du hast 10 Punkte gespart<br>und bekommst einen Joker!' : 'Du hast dein Ziel erreicht<br>und bekommst einen Joker!'}</div>
+    <div style="font-size:${isTiny?'1.05em':isSmall?'1.2em':'2.4em'};line-height:1.6;font-family:'Arial Rounded MT Bold',Arial,sans-serif">${
+      reason==='bank'   ? 'Du hast 10 Punkte gespart<br>und bekommst einen Joker!' :
+      reason==='bonus'  ? 'Dein Fleiß zahlt sich aus –<br>du bekommst einen Joker!' :
+      reason==='smiley' ? 'Deine guten Taten bringen<br>dir einen Joker!' :
+                          'Du hast dein Ziel erreicht<br>und bekommst einen Joker!'
+    }</div>
     <div style="font-size:${isTiny?'.82em':isSmall?'.9em':'1.56em'};opacity:.6;margin-top:${isSmall?'16px':'32px'};font-family:Arial,sans-serif">Tippe irgendwo um weiterzumachen</div>
   `;
   ov.appendChild(msg);
@@ -2230,8 +2293,19 @@ function calcConv(){
   const state=getState();
   const price=parseFloat(document.getElementById('conv-price').value);
   const result=document.getElementById('conv-result');
-  if(!price||price<=0){result.textContent='–';return;}
-  result.textContent=Math.round(price/state.eurToJoker.euros*state.eurToJoker.jokers);
+  const wrap=document.getElementById('conv-adopt-wrap');
+  if(!price||price<=0||!state.eurToJoker.euros){result.textContent='–';if(wrap)wrap.style.display='none';return;}
+  const val=Math.round(price/state.eurToJoker.euros*state.eurToJoker.jokers);
+  result.textContent=val;
+  if(wrap) wrap.style.display=val>0?'flex':'none';
+}
+function adoptConvResult(){
+  const val=document.getElementById('conv-result').textContent;
+  if(!val||val==='–') return;
+  const inp=document.getElementById('goal-cost');
+  if(inp){inp.value=val;document.getElementById('goal-cost-hint').style.display='none';}
+  showToast('✅ Wert übernommen: '+val+' Joker');
+  closeMenu();
 }
 // ═══════════════════════════════════════════════════════
 // ABENTEUER-ZEIT
