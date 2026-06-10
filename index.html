@@ -1057,7 +1057,7 @@ function saveState(s) {
   } else {
     localStorage.setItem('oskar-v4', JSON.stringify(s));
   }
-  if(_editUnlocked) sendNtfy('✏️ Ein Lehrer hat etwas in Oskars Wunsch-Maschine eingetragen.');
+  sendNtfy('✏️ Es gibt eine neue Änderung in Oskars Wunsch-Maschine.');
 }
 
 function migrate(s){
