@@ -1365,12 +1365,14 @@ function renderScore(state,c){
   const arcLen=267; // full semicircle length
   const filled=arcLen*(pct/100);
   const arc=document.getElementById('tacho-arc');
-  if(arc) arc.setAttribute('stroke-dasharray',`${filled} ${arcLen-filled}`);
+  if(arc){ arc.setAttribute('stroke-dasharray',`${filled} ${arcLen-filled}`); arc.dataset.targetFilled=filled; }
   const needleG=document.getElementById('tacho-needle-g');
   if(needleG){
     const angle=-90+(180*(pct/100));
     needleG.setAttribute('transform',`rotate(${angle},100,100)`);
+    needleG.dataset.targetAngle=angle;
   }
+  if(window._triggerTachoIfVisible) window._triggerTachoIfVisible();
   document.getElementById('prog-lbl').textContent=c.goalReached?'🎉 Wochenziel erreicht!':`Noch ${c.weekGoal-c.score} Punkt${c.weekGoal-c.score===1?'':'e'} bis zum Ziel`;
   document.getElementById('j-bonus').textContent=c.totalBonus;
   document.getElementById('j-smiley').textContent=c.totalSmileys;
@@ -3065,20 +3067,19 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // ── Tacho entrance animation ──────────────────────────
   (()=>{
-    let tachoAnimated=false;
-    const svg=document.getElementById('tacho-svg');
-    if(!svg) return;
-    const obs=new IntersectionObserver(entries=>{
-      if(tachoAnimated||!entries[0].isIntersecting) return;
-      tachoAnimated=true;
+    window._tachoAnimated=false;
+    window._tachoReady=false;
+    function runTachoAnim(){
+      if(window._tachoAnimated) return;
       const needleG=document.getElementById('tacho-needle-g');
       const arc=document.getElementById('tacho-arc');
       const scoreEl=document.getElementById('score-num');
       if(!needleG||!arc) return;
-      const targetAngle=parseFloat(needleG.getAttribute('transform').match(/-?\d+(\.\d+)?/)[0]);
-      const dashArr=arc.getAttribute('stroke-dasharray').split(' ');
-      const targetFilled=parseFloat(dashArr[0]);
-      const targetScore=parseInt(scoreEl?.dataset.target||scoreEl?.textContent||0);
+      const targetAngle=parseFloat(needleG.dataset.targetAngle);
+      const targetFilled=parseFloat(arc.dataset.targetFilled);
+      if(isNaN(targetAngle)||isNaN(targetFilled)) return; // render noch nicht gelaufen
+      window._tachoAnimated=true;
+      const targetScore=parseInt(scoreEl?.dataset.target||0);
       const arcLen=267;
       const startAngle=-90;
       const duration=1000;
@@ -3090,17 +3091,26 @@ document.addEventListener('DOMContentLoaded',()=>{
       function step(now){
         const p=Math.min((now-start)/duration,1);
         const e=ease(p);
-        const ang=startAngle+(targetAngle-startAngle)*e;
-        const fill=targetFilled*e;
-        needleG.setAttribute('transform',`rotate(${ang},100,100)`);
-        arc.setAttribute('stroke-dasharray',`${fill} ${arcLen-fill}`);
+        needleG.setAttribute('transform',`rotate(${startAngle+(targetAngle-startAngle)*e},100,100)`);
+        arc.setAttribute('stroke-dasharray',`${targetFilled*e} ${arcLen-targetFilled*e}`);
         if(scoreEl) scoreEl.textContent=Math.round(targetScore*e);
         if(p<1) requestAnimationFrame(step);
-        else{ if(scoreEl) scoreEl.textContent=targetScore; tachoAnimated=false; }
+        else{ if(scoreEl) scoreEl.textContent=targetScore; window._tachoAnimated=false; }
       }
       requestAnimationFrame(step);
-    },{threshold:0.3});
-    obs.observe(svg);
+    }
+    const svg=document.getElementById('tacho-svg');
+    if(svg){
+      const obs=new IntersectionObserver(entries=>{
+        if(!entries[0].isIntersecting) return;
+        window._tachoVisible=true;
+        runTachoAnim();
+      },{threshold:0.3});
+      obs.observe(svg);
+    }
+    window._triggerTachoIfVisible=function(){
+      if(window._tachoVisible) runTachoAnim();
+    };
   })();
 
   if (FIREBASE_CONFIGURED) {
