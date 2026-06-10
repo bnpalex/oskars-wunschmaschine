@@ -391,6 +391,13 @@ body.abenteuer-mode-active{background:linear-gradient(160deg,#fff3e0 0%,#ffe0b2 
           <button onclick="lockEdit()" style="width:100%;background:#e53935;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:.85em;font-weight:bold;cursor:pointer">🔒 Wieder sperren</button>
         </div>
       </div>
+      <hr style="border:none;border-top:1px solid rgba(100,60,180,.12);margin:12px 0">
+      <label style="font-size:.8em;font-weight:bold;display:block;margin-bottom:4px">🔔 Push-Benachrichtigungen (ntfy.sh)</label>
+      <p style="font-size:.75em;margin:0 0 8px">Wenn ein Lehrer etwas einträgt, bekommst du eine Nachricht. Trage hier deinen ntfy-Topic ein und abonniere ihn in der <strong>ntfy-App</strong>.</p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="ntfy-topic-input" placeholder="z.B. oskar-benachrichtigung-xyz" style="flex:1;border:2px solid #ddd;border-radius:8px;padding:7px 10px;font-size:.85em;outline:none" oninput="saveNtfyTopic()"/>
+      </div>
+      <p style="font-size:.72em;color:#888;margin:6px 0 0">Topic selbst wählen — je ungewöhnlicher desto besser. App: <strong>ntfy.sh</strong></p>
     </div>
   </div>
 
@@ -1046,10 +1053,11 @@ function getState() {
 function saveState(s) {
   _state = s;
   if (FIREBASE_CONFIGURED) {
-    _ref.set(JSON.parse(JSON.stringify(s))); // Firebase mag keine undefined-Werte
+    _ref.set(JSON.parse(JSON.stringify(s)));
   } else {
     localStorage.setItem('oskar-v4', JSON.stringify(s));
   }
+  if(_editUnlocked) sendNtfy('✏️ Ein Lehrer hat etwas in Oskars Wunsch-Maschine eingetragen.');
 }
 
 function migrate(s){
@@ -2155,6 +2163,7 @@ function toggleAcc(h3el){
 function openMenu(){
   document.querySelectorAll('.menu-section').forEach(s=>s.classList.remove('open'));
   document.getElementById('menu-overlay').classList.add('open');
+  loadNtfyTopic();
   const state=getState();
   const c=compute(state);
   renderStats(state,c);
@@ -2875,6 +2884,26 @@ function saveSettings(){
   state.settings.starsMonths=parseInt(document.getElementById('set-stars-months').value)||0;
   state.settings.starsAll=document.getElementById('set-stars-all').checked;
   saveState(state);render();
+}
+
+function saveNtfyTopic(){
+  const val=(document.getElementById('ntfy-topic-input').value||'').trim();
+  localStorage.setItem('oskar-ntfy-topic',val);
+}
+function loadNtfyTopic(){
+  const val=localStorage.getItem('oskar-ntfy-topic')||'';
+  const inp=document.getElementById('ntfy-topic-input');
+  if(inp) inp.value=val;
+  return val;
+}
+function sendNtfy(message){
+  const topic=loadNtfyTopic();
+  if(!topic) return;
+  fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`,{
+    method:'POST',
+    body:message,
+    headers:{'Title':'Oskars Wunsch-Maschine','Priority':'default','Tags':'pencil'}
+  }).catch(()=>{});
 }
 
 function unlockEdit(){
