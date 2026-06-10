@@ -1170,6 +1170,16 @@ function compute(state){
 // ═══════════════════════════════════════════════════════
 function render(){
   const state=getState();
+  // Auto-fix: weekStart must be a Monday — correct if off by timezone bug
+  if(state.weekStart){
+    const ws=new Date(state.weekStart+'T12:00:00');
+    if(ws.getDay()!==1){
+      const diff=ws.getDay()===0?-6:1-ws.getDay();
+      ws.setDate(ws.getDate()+diff);
+      state.weekStart=localISO(ws);
+      saveState(state);
+    }
+  }
   const c=compute(state);
   // Auto-exit: wenn manuelle Aktivierung läuft aber keine Ferien mehr → zurück zur Schule
   if(state.abenteuer?.manual && !getCurrentVacation()){
