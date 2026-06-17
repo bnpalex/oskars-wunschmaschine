@@ -1055,7 +1055,28 @@ function getState() {
 function saveState(s) {
   _state = s;
   if (FIREBASE_CONFIGURED) {
-    _ref.set(JSON.parse(JSON.stringify(s)));
+    // Versionszähler hochzählen — wird für den Race-Condition-Schutz unten gebraucht
+    s._rev = (s._rev||0) + 1;
+    const payload = JSON.parse(JSON.stringify(s));
+    // transaction() statt set(): liest atomar den aktuellen Server-Stand und schreibt
+    // nur, wenn unsere Version (_rev) wirklich neuer ist als das, was gerade auf dem
+    // Server liegt. So kann ein Gerät mit veraltetem lokalem Stand (z.B. weil ein
+    // anderes Gerät kurz vorher "Neue Woche starten" geklickt hat) diese Änderung
+    // nicht mehr versehentlich überschreiben.
+    _ref.transaction(serverData => {
+      if (serverData && (serverData._rev||0) >= payload._rev) {
+        // Server ist schon aktueller (oder gleich aktuell) — nicht überschreiben.
+        // Lokalen Stand stattdessen auf den Server-Stand korrigieren.
+        _state = migrate(serverData);
+        return; // undefined = Transaction abbrechen, nichts schreiben
+      }
+      return payload;
+    }, (error, committed, snap) => {
+      if (!error && committed && snap && snap.val()) {
+        _state = migrate(snap.val());
+        render();
+      }
+    });
   } else {
     localStorage.setItem('oskar-v4', JSON.stringify(s));
   }
@@ -1424,8 +1445,9 @@ function renderScore(state,c){
   dotsEl.appendChild(sdr);
 
   // Bank — zeigt auch die laufenden Wochenpunkte wenn Ziel noch nicht erreicht
-  const bankPts = c.bankPoints;
-  const spaceLeft = Math.max(0, 10 - bankPts);
+  // bankPts = Rest nach vollen 10er-Blöcken (für die Dots-Anzeige, 0-9)
+  const bankPts = c.bankPoints % 10;
+  const spaceLeft = 10 - bankPts;
   const weekContrib = (!c.goalReached && c.score > 0) ? Math.min(c.score, spaceLeft) : 0;
   const bankTotal = bankPts + weekContrib;
   // Dots
@@ -1464,12 +1486,15 @@ function renderScore(state,c){
     }
   }
   const lbl = document.getElementById('bank-pts');
-  if(weekContrib > 0 && bankPts < 10){
+  const readyBlocks = Math.floor(c.bankPoints / 10);
+  if(weekContrib > 0){
     lbl.innerHTML = `${bankPts} <span style="font-size:.85em;color:#aaa;font-weight:normal">+ ${weekContrib} diese Woche</span>`;
   } else {
     lbl.textContent = bankPts;
   }
-  document.getElementById('bank-btn-lbl').innerHTML = `10 Pkt = 1 ${HEART_ICO}`;
+  document.getElementById('bank-btn-lbl').innerHTML = readyBlocks>1
+    ? `10 Pkt = 1 ${HEART_ICO} (${readyBlocks}x einlösbar)`
+    : `10 Pkt = 1 ${HEART_ICO}`;
   const btn = document.getElementById('bank-btn');
   if(c.bankCanConvert){
     btn.style.opacity='1';btn.style.pointerEvents='auto';
@@ -1866,12 +1891,10 @@ function newWeek(){
     state.goalJokers=(state.goalJokers||0)+1;
     setTimeout(()=>showCelebration('goal'),300);
   } else if(c.score>0){
-    // Ziel verfehlt → Punkte in die Bank (max. 10)
+    // Ziel verfehlt → Punkte in die Bank (kein Deckel, wächst unbegrenzt weiter)
     const prevBank=state.bankPoints||0;
-    const addPts=Math.min(c.score, 10-prevBank);
-    state.bankPoints=prevBank+addPts;
-    if(addPts>0) showToast(`💰 ${addPts} Punkte in die Bank eingezahlt!`);
-    else showToast(`🐷 Bank schon voll – diese Woche keine neuen Punkte gespart.`);
+    state.bankPoints=prevBank+c.score;
+    showToast(`💰 ${c.score} Punkte in die Bank eingezahlt!`);
   }
   state.weekStart=mondayISO();
   state.days=Array(5).fill(null).map(()=>({mathe:false,deutsch:false,bonus:false,matheFilled:false,deutschFilled:false,smileys:[]}));
@@ -2951,7 +2974,9 @@ function lockEdit(){
   showToast('🔒 Vergangene Tage wieder gesperrt!');
 }
 
-// Prüft ob ein Tag in der Vergangenheit liegt (ISO < heute) und gesperrt ist
+// Prüft ob ein Tag in der Vergangenheit liegt (ISO < heute) und gesperrt ist.
+// Gilt unverändert auch direkt nach einem Wochenwechsel — vergangene Tage
+// lassen sich über den PIN im Menü jederzeit zur Korrektur entsperren.
 function isDayLocked(dayIdx){
   if(_editUnlocked) return false;
   const state=getState();
