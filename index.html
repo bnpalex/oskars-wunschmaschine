@@ -1445,10 +1445,13 @@ function renderScore(state,c){
   dotsEl.appendChild(sdr);
 
   // Bank — zeigt auch die laufenden Wochenpunkte wenn Ziel noch nicht erreicht
-  // bankPts = Rest nach vollen 10er-Blöcken (für die Dots-Anzeige, 0-9)
-  const bankPts = c.bankPoints % 10;
-  const spaceLeft = 10 - bankPts;
-  const weekContrib = (!c.goalReached && c.score > 0) ? Math.min(c.score, spaceLeft) : 0;
+  // Solange ein voller 10er-Block bereit zum Einlösen ist, zeigen wir diesen vollen
+  // Block (10/10) an — nicht den Rest danach. Der Rest erscheint erst NACH dem Einlösen,
+  // wenn state.bankPoints tatsächlich um 10 reduziert wurde.
+  const readyBlocks = Math.floor(c.bankPoints / 10);
+  const bankPts = readyBlocks>0 ? 10 : (c.bankPoints % 10);
+  const spaceLeft = readyBlocks>0 ? 0 : (10 - bankPts);
+  const weekContrib = (readyBlocks===0 && !c.goalReached && c.score > 0) ? Math.min(c.score, spaceLeft) : 0;
   const bankTotal = bankPts + weekContrib;
   // Dots
   const dotsContainer = document.getElementById('bank-dots');
@@ -1486,7 +1489,6 @@ function renderScore(state,c){
     }
   }
   const lbl = document.getElementById('bank-pts');
-  const readyBlocks = Math.floor(c.bankPoints / 10);
   if(weekContrib > 0){
     lbl.innerHTML = `${bankPts} <span style="font-size:.85em;color:#aaa;font-weight:normal">+ ${weekContrib} diese Woche</span>`;
   } else {
