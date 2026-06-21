@@ -1055,27 +1055,18 @@ function getState() {
 function saveState(s) {
   _state = s;
   if (FIREBASE_CONFIGURED) {
-    // Versionszähler hochzählen — wird für den Race-Condition-Schutz unten gebraucht
-    s._rev = (s._rev||0) + 1;
     const payload = JSON.parse(JSON.stringify(s));
-    // transaction() statt set(): liest atomar den aktuellen Server-Stand und schreibt
-    // nur, wenn unsere Version (_rev) wirklich neuer ist als das, was gerade auf dem
-    // Server liegt. So kann ein Gerät mit veraltetem lokalem Stand (z.B. weil ein
-    // anderes Gerät kurz vorher "Neue Woche starten" geklickt hat) diese Änderung
-    // nicht mehr versehentlich überschreiben.
-    _ref.transaction(serverData => {
-      if (serverData && (serverData._rev||0) >= payload._rev) {
-        // Server ist schon aktueller (oder gleich aktuell) — nicht überschreiben.
-        // Lokalen Stand stattdessen auf den Server-Stand korrigieren.
-        _state = migrate(serverData);
-        return; // undefined = Transaction abbrechen, nichts schreiben
-      }
-      return payload;
-    }, (error, committed, snap) => {
-      if (!error && committed && snap && snap.val()) {
-        _state = migrate(snap.val());
-        render();
-      }
+    // Schreibe alle Felder außer weekStart direkt per update().
+    // weekStart wird separat per transaction() geschützt:
+    // es darf nur auf einen NEUEREN Wert geändert werden, nie auf einen älteren.
+    // Das verhindert, dass ein zweites Gerät mit veraltetem Stand einen frischen
+    // Wochenwechsel wieder zurückdreht.
+    const { weekStart, ...rest } = payload;
+    _ref.update(rest);
+    _ref.child('weekStart').transaction(current => {
+      // Nur überschreiben, wenn der neue weekStart neuer (oder gleich) ist
+      if (current && current > weekStart) return; // Server hat neueren Stand → abbrechen
+      return weekStart;
     });
   } else {
     localStorage.setItem('oskar-v4', JSON.stringify(s));
