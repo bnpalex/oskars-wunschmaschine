@@ -1158,7 +1158,8 @@ function localISO(d){
 }
 function mondayISO(){
   const d=new Date();
-  const diff=d.getDay()===0?-6:1-d.getDay();
+  // Sonntag (0) → nächster Montag (+1), alle anderen → letzter Montag
+  const diff=d.getDay()===0?1:1-d.getDay();
   d.setDate(d.getDate()+diff);
   return localISO(d);
 }
