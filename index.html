@@ -1055,19 +1055,7 @@ function getState() {
 function saveState(s) {
   _state = s;
   if (FIREBASE_CONFIGURED) {
-    const payload = JSON.parse(JSON.stringify(s));
-    // Schreibe alle Felder außer weekStart direkt per update().
-    // weekStart wird separat per transaction() geschützt:
-    // es darf nur auf einen NEUEREN Wert geändert werden, nie auf einen älteren.
-    // Das verhindert, dass ein zweites Gerät mit veraltetem Stand einen frischen
-    // Wochenwechsel wieder zurückdreht.
-    const { weekStart, ...rest } = payload;
-    _ref.update(rest);
-    _ref.child('weekStart').transaction(current => {
-      // Nur überschreiben, wenn der neue weekStart neuer (oder gleich) ist
-      if (current && current > weekStart) return; // Server hat neueren Stand → abbrechen
-      return weekStart;
-    });
+    _ref.set(JSON.parse(JSON.stringify(s)));
   } else {
     localStorage.setItem('oskar-v4', JSON.stringify(s));
   }
@@ -1891,7 +1879,19 @@ function newWeek(){
   }
   state.weekStart=mondayISO();
   state.days=Array(5).fill(null).map(()=>({mathe:false,deutsch:false,bonus:false,matheFilled:false,deutschFilled:false,smileys:[]}));
-  saveState(state);render();
+  saveState(state);
+  // Gezielter Schutz: weekStart per Transaction sichern, damit kein zweites Gerät
+  // mit veraltetem Stand den neuen Wochenwechsel zurückdreht.
+  if(FIREBASE_CONFIGURED){
+    const newWeekStart = state.weekStart;
+    _ref.child('weekStart').transaction(current => {
+      if(current && current >= newWeekStart) return; // Server hat gleichen oder neueren Stand → nichts tun
+      return newWeekStart;
+    }, (err, committed) => {
+      if(!err && committed) render();
+    });
+  }
+  render();
   showToast('🚀 Neue Woche! Viel Erfolg, Oskar!');
 }
 
