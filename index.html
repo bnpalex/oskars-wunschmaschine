@@ -1442,7 +1442,7 @@ function renderScore(state,c){
       const filled=i<bankPts;
       const preview=!filled&&weekContrib>0&&i<bankTotal;
       dot.className='bdot';
-      if(filled||preview){
+      if(filled){
         dot.style.cssText='border:none;background-color:#3a1a6e;animation:breathe-color-bg 8s ease-in-out infinite;display:flex;align-items:center;justify-content:center';
         const W='rgba(255,255,255,0.9)';
         const E=`fill="${W}" stroke="none"`;
@@ -1464,6 +1464,10 @@ function renderScore(state,c){
         ];
         const face=Math.random()<0.8 ? faces[0] : faces[1+Math.floor(Math.random()*(faces.length-1))];
         dot.innerHTML=`<svg viewBox="0 0 24 24" width="80%" height="80%" style="display:block" fill="none" stroke="${W}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">${face}</svg>`;
+      } else if(preview){
+        // Vorschau-Punkt: noch nicht wirklich gespart, aber auf dem Weg dahin
+        dot.style.cssText='border:2px dashed #9b8ec4;background:rgba(102,126,234,0.12);display:flex;align-items:center;justify-content:center;opacity:0.6';
+        dot.innerHTML=`<svg viewBox="0 0 24 24" width="60%" height="60%" style="display:block" fill="none" stroke="#9b8ec4" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/></svg>`;
       }
       dotsContainer.appendChild(dot);
     }
